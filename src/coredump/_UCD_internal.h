@@ -75,11 +75,13 @@ struct coredump_phdr
 typedef struct coredump_phdr coredump_phdr_t;
 
 #if defined(HAVE_STRUCT_ELF_PRSTATUS)
-#define PRSTATUS_STRUCT elf_prstatus
+typedef struct elf_prstatus unw_prstatus_t;
 #elif defined(HAVE_STRUCT_PRSTATUS)
-#define PRSTATUS_STRUCT prstatus
+typedef struct prstatus unw_prstatus_t;
+#elif defined(HAVE_PROCFS_STATUS)
+typedef procfs_status unw_prstatus_t;
 #else
-#define PRSTATUS_STRUCT non_existent
+# error port me
 #endif
 
 struct UCD_info
@@ -90,9 +92,9 @@ struct UCD_info
     coredump_phdr_t *phdrs; /* array, allocated */
     unsigned phdrs_count;
     void *note_phdr; /* allocated or NULL */
-    struct PRSTATUS_STRUCT *prstatus; /* points inside note_phdr */
+    unw_prstatus_t *prstatus; /* points inside note_phdr */
     int n_threads;
-    struct PRSTATUS_STRUCT **threads;
+    unw_prstatus_t **threads;
 
     struct elf_dyn_info edi;
   };

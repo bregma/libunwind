@@ -36,7 +36,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #elif defined(HAVE_SYS_ELF_H)
 # include <sys/elf.h>
 #endif
-#include <sys/procfs.h> /* struct elf_prstatus */
 
 #include "_UCD_lib.h"
 #include "_UCD_internal.h"
@@ -275,12 +274,20 @@ void _UCD_select_thread(struct UCD_info *ui, int n)
 
 pid_t _UCD_get_pid(struct UCD_info *ui)
 {
+#if defined(HAVE_PROCFS_STATUS)
+  return ui->prstatus->pid;
+#else
   return ui->prstatus->pr_pid;
+#endif
 }
 
 int _UCD_get_cursig(struct UCD_info *ui)
 {
+#if defined(HAVE_PROCFS_STATUS)
+  return -1;
+#else
   return ui->prstatus->pr_cursig;
+#endif
 }
 
 int _UCD_add_backing_file_at_segment(struct UCD_info *ui, int phdr_no, const char *filename)
