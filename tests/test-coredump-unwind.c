@@ -174,7 +174,7 @@ void error_msg_and_die(const char *s, ...)
 {
   va_list p;
   va_start(p, s);
-  verror_msg_helper(s, p, NULL, logmode);
+  vfprintf(stderr, s, p);
   va_end(p);
   xfunc_die();
 }
@@ -278,7 +278,7 @@ main(int argc UNUSED, char **argv)
 #define TEST_NAME_LEN 32
   int testcase = 0;
   int test_cur = 0;
-  long test_start_ips[TEST_FRAMES];
+  long test_start_ips[TEST_FRAMES] = { 0L };
   char test_names[TEST_FRAMES][TEST_NAME_LEN];
 
   install_sigsegv_handler();
@@ -343,7 +343,7 @@ main(int argc UNUSED, char **argv)
         unw_word_t off;
         unw_get_proc_name(&c, proc_name, sizeof(proc_name), &off);
 
-        printf("\tip=0x%08lx proc=%08lx-%08lx handler=0x%08lx lsda=0x%08lx %s\n",
+        fprintf(stderr, "\tip=0x%08lx proc=%08lx-%08lx handler=0x%08lx lsda=0x%08lx %s\n",
 				(long) ip,
 				(long) pi.start_ip, (long) pi.end_ip,
 				(long) pi.handler, (long) pi.lsda, proc_name);
@@ -361,15 +361,21 @@ main(int argc UNUSED, char **argv)
            test_cur++;
         }
 
-      log("step");
+      fprintf(stderr, "step\n");
       ret = unw_step(&c);
-      log("step done:%d", ret);
+      fprintf(stderr, "step done: %d\n", ret);
       if (ret < 0)
     	error_msg_and_die("FAILURE: unw_step() returned %d", ret);
       if (ret == 0)
         break;
     }
-  log("stepping ended");
+  fprintf(stderr, "stepping ended\n");
+
+  fprintf(stderr, "testcase=%d test_cur=%d\n", testcase, test_cur);
+  for (int i = 0; i < TEST_FRAMES; ++i)
+	{
+	  fprintf(stderr, "test_start_ips[%d]=%#08lx\n", i, test_start_ips[i]);
+	}
 
   /* Check that the second and third frames are equal, but distinct of the
    * others */
@@ -382,11 +388,6 @@ main(int argc UNUSED, char **argv)
      )
     {
       fprintf(stderr, "FAILURE: start IPs incorrect\n");
-      fprintf(stderr, "testcase=%d test_cur=%d\n", testcase, test_cur);
-      for (int i = 0; i < TEST_FRAMES; ++i)
-      	{
-	  fprintf(stderr, "test_start_ips[%d]=%#08lx\n", i, test_start_ips[i]);
-	}
       return -1;
     }
 
