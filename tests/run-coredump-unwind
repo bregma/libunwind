@@ -51,4 +51,4 @@ fi
 COREFILE=$TEMPDIR/core*
 
 # magic option -testcase enables checking for the specific contents of the stack
-./test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`
+UNW_DEBUG_LEVEL=15 ./test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`

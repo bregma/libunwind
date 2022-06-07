@@ -57,7 +57,7 @@ jobs:
           export CFLAGS="$CFLAGS -${{ matrix.OPT }}"
           export CXXFLAGS="$CXXFLAGS -${{ matrix.OPT}}"
           autoreconf -i
-          ./configure --build=$BUILD --host=$HOST
+          ./configure --build=$BUILD --host=$HOST --enable-debug
           make -j8
       - name: Test (native)
         if: ${{ success() && (matrix.HOST == 'x86_64-linux-gnu' || matrix.HOST == 'x86-linux-gnu') }}
