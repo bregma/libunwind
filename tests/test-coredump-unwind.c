@@ -382,6 +382,11 @@ main(int argc UNUSED, char **argv)
      )
     {
       fprintf(stderr, "FAILURE: start IPs incorrect\n");
+      fprintf(stderr, "testcase=%d test_cur=%d\n", testcase, test_cur);
+      for (int i = 0; i < TEST_FRAMES; ++i)
+      	{
+	  fprintf(stderr, "test_start_ips[%d]=%#08lx\n", i, test_start_ips[i]);
+	}
       return -1;
     }
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 # this function is slight modification of the one used in RPM
 # found at https://bugzilla.redhat.com/show_bug.cgi?id=834073
