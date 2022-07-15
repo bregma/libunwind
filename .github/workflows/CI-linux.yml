@@ -122,3 +122,4 @@ jobs:
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           ${{ matrix.config.qemu }} make -j8 check
+          cat tests/test-suite.log 2>/dev/null
