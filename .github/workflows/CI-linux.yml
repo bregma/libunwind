@@ -79,18 +79,18 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {target: arm,     toolchain: gcc-arm-linux-gnueabi,       host: arm-linux-gnueabi,      qemu: arm     }
-          - {target: armhf,   toolchain: gcc-arm-linux-gnueabihf,     host: arm-linux-gnueabihf,    qemu: arm     }
-          - {target: aarch64, toolchain: gcc-aarch64-linux-gnu,       host: aarch64-linux-gnu,      qemu: aarch64 }
-          - {target: riscv64, toolchain: gcc-riscv64-linux-gnu,       host: riscv64-linux-gnu,      qemu: riscv64 }
-          - {target: ppc,     toolchain: gcc-powerpc-linux-gnu,       host: powerpc-linux-gnu,      qemu: ppc     }
-          - {target: ppc64,   toolchain: gcc-powerpc64-linux-gnu,     host: powerpc64-linux-gnu,    qemu: ppc64   }
-          - {target: ppc64le, toolchain: gcc-powerpc64le-linux-gnu,   host: powerpc64le-linux-gnu,  qemu: ppc64le }
-          - {target: s390x,   toolchain: gcc-s390x-linux-gnu,         host: s390x-linux-gnu,        qemu: s390x   }
-          - {target: mips,    toolchain: gcc-mips-linux-gnu,          host: mips-linux-gnu,         qemu: mips     }
-          - {target: mips64,  toolchain: gcc-mips64-linux-gnuabi64,   host: mips64-linux-gnuabi64,  qemu: mips64   }
-          - {target: mipsel,  toolchain: gcc-mipsel-linux-gnu,        host: mipsel-linux-gnu,       qemu: mipsel   }
-          - {target: mips64el,toolchain: gcc-mips64el-linux-gnuabi64, host: mips64el-linux-gnuabi64,qemu: mips64el }
+          - {target: arm,     toolchain: g++-arm-linux-gnueabi,       host: arm-linux-gnueabi,      qemu: arm     }
+          - {target: armhf,   toolchain: g++-arm-linux-gnueabihf,     host: arm-linux-gnueabihf,    qemu: arm     }
+          - {target: aarch64, toolchain: g++-aarch64-linux-gnu,       host: aarch64-linux-gnu,      qemu: aarch64 }
+          - {target: riscv64, toolchain: g++-riscv64-linux-gnu,       host: riscv64-linux-gnu,      qemu: riscv64 }
+          - {target: ppc,     toolchain: g++-powerpc-linux-gnu,       host: powerpc-linux-gnu,      qemu: ppc     }
+          - {target: ppc64,   toolchain: g++-powerpc64-linux-gnu,     host: powerpc64-linux-gnu,    qemu: ppc64   }
+          - {target: ppc64le, toolchain: g++-powerpc64le-linux-gnu,   host: powerpc64le-linux-gnu,  qemu: ppc64le }
+          - {target: s390x,   toolchain: g++-s390x-linux-gnu,         host: s390x-linux-gnu,        qemu: s390x   }
+          - {target: mips,    toolchain: g++-mips-linux-gnu,          host: mips-linux-gnu,         qemu: mips     }
+          - {target: mips64,  toolchain: g++-mips64-linux-gnuabi64,   host: mips64-linux-gnuabi64,  qemu: mips64   }
+          - {target: mipsel,  toolchain: g++-mipsel-linux-gnu,        host: mipsel-linux-gnu,       qemu: mipsel   }
+          - {target: mips64el,toolchain: g++-mips64el-linux-gnuabi64, host: mips64el-linux-gnuabi64,qemu: mips64el }
 
     steps:
       - uses: actions/checkout@v2
