@@ -112,7 +112,7 @@ jobs:
           set -x
           autoreconf -i
           BUILD=x86_64-linux-gnu
-          ./configure --build=$BUILD --host=${{ matrix.config.host }} --with-testdriver=scripts/qemu-test-driver
+          ./configure --build=$BUILD --host=${{ matrix.config.host }} --with-testdriver=$(pwd)/scripts/qemu-test-driver
       - name: Build
         run: |
           make -j8
