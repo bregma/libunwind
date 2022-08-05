@@ -118,11 +118,10 @@ jobs:
           make -j8
       - name: Test
         run: |
-          set -x
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           CROSS_LIB="/usr/${{ matrix.config.host }}"
-          make -j8 check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }} verbose yes" LDFLAGS="-L$CROSS_LIB/lib -static" QEMU_LD_PREFIX="$CROSS_LIB"
+          make -j8 check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }} --verbose yes" LDFLAGS="-L$CROSS_LIB/lib -static" QEMU_LD_PREFIX="$CROSS_LIB"
       - name: Show Logs
         if: ${{ failure() }}
         run: |
