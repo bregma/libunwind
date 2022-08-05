@@ -56,6 +56,7 @@ trs_file=  # Where to save the metadata of the test run.
 expect_failure=no
 color_tests=no
 enable_hard_errors=yes
+verbose=no
 while test $# -gt 0; do
   case $1 in
   --help) print_usage; exit $?;;
@@ -67,6 +68,7 @@ while test $# -gt 0; do
   --expect-failure) expect_failure=$2; shift;;
   --enable-hard-errors) enable_hard_errors=$2; shift;;
   --qemu-arch) qemu_arch=$2; shift;;
+  --verbose) verbose=$2; shift;;
   --) shift; break;;
   -*) usage_error "invalid option: '$1'";;
    *) break;;
@@ -107,6 +109,9 @@ trap "st=143; $do_exit" 15
 
 qemu_cmd="qemu-${qemu_arch}-static"
 # Test script is run here.
+if test x$verbose != xno; then
+  printf "%s\n" "${qemu_cmd} $@"
+fi
 ${qemu_cmd} "$@" >$log_file 2>&1
 estatus=$?
 
