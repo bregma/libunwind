@@ -121,7 +121,8 @@ jobs:
           set -x
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
-          make -j8 check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" QEMU_LD_PREFIX="/usr/${{ matrix.config.host }}"
+          CROSS_LIB="/usr/${{ matrix.config.qemu }}"
+          make -j8 check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" LDFLAGS="-L$CROSS_LIB/lib -static" QEMU_LD_PREFIX="$CROSS_LIB"
       - name: Show Logs
         if: ${{ failure() }}
         run: |
