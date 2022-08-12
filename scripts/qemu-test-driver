@@ -112,7 +112,8 @@ qemu_cmd="qemu-${qemu_arch}-static"
 if test x$verbose != xno; then
   printf "%s\n" "${qemu_cmd} $@"
 fi
-${qemu_cmd} "$@" >$log_file 2>&1
+export UNW_DEBUG_LEVEL=6
+${qemu_cmd} "$@" -verbose >$log_file 2>&1
 estatus=$?
 
 if test $enable_hard_errors = no && test $estatus -eq 99; then
