@@ -1,12 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-define(pkg_major, 1)
-define(pkg_minor, 6)
-define(pkg_extra, -rc1)
-define(pkg_maintainer, libunwind-devel@nongnu.org)
-define(mkvers, $1.$2$3)
-
-AC_INIT([libunwind],[mkvers(pkg_major, pkg_minor, pkg_extra)],[pkg_maintainer])
+AC_INIT([libunwind],[1.6.3pre],[libunwind-devel@nongnu.org])
 AC_CONFIG_SRCDIR(src/mi/backtrace.c)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIRS([m4])
@@ -20,8 +14,7 @@ dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_PROG_MAKE_SET
-m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+AM_PROG_AR([:])
 LT_INIT
 AM_PROG_AS
 AM_PROG_CC_C_O
@@ -49,6 +42,8 @@ AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_CHECK_SIZEOF(off_t)
 
+# This should really really not be hard-coded here since it's a GNU/Linux+GCC thing.
+# Hardly the stuff of portable autoconfigury.
 CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
 
 AC_CHECK_MEMBERS([struct dl_phdr_info.dlpi_subs],,,[#include <link.h>])
@@ -417,12 +412,6 @@ CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
 arch="$target_arch"
 ARCH=`echo $target_arch | tr [a-z] [A-Z]`
 
-dnl create shell variables from the M4 macros:
-PKG_MAJOR=pkg_major
-PKG_MINOR=pkg_minor
-PKG_EXTRA=pkg_extra
-PKG_MAINTAINER=pkg_maintainer
-
 old_LIBS="$LIBS"
 LIBS=""
 AC_SEARCH_LIBS(backtrace, execinfo)
@@ -446,10 +435,6 @@ AC_SUBST(ARCH)
 AC_SUBST(LDFLAGS_STATIC_LIBCXA)
 AC_SUBST(LDFLAGS_NOSTARTFILES)
 AC_SUBST(LIBCRTS)
-AC_SUBST(PKG_MAJOR)
-AC_SUBST(PKG_MINOR)
-AC_SUBST(PKG_EXTRA)
-AC_SUBST(PKG_MAINTAINER)
 AC_SUBST(enable_cxx_exceptions)
 AC_SUBST(enable_debug_frame)
 AC_SUBST(DLLIB)
