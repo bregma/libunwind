@@ -1,0 +1,146 @@
+# host_tests.at - autotest driver for host-only tests
+# 
+# This file is part of libunwind - a platform-independent unwind library
+# 
+# Copyright 2022 Stephen M. Webb  <stephen.webb@bregmasoft.ca>
+# 
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+# 
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
+AT_INIT([libunwind tests])
+
+AT_ARG_OPTION_ARG([libdir],
+    AS_HELP_STRING([--libdir], [location of ${PACKAGE} libraries under test]),
+    [], [at_arg_libdir=/usr/lib])
+
+AT_ARG_OPTION_ARG([wrapper w],
+    AS_HELP_STRING([--wrapper -w], [execution wrapper (eg. qemu, time)]))
+
+AT_SETUP([ABI Compliance Checks])
+  AT_KEYWORDS([host])
+  AT_KEYWORDS([abi])
+  AT_CHECK([check-namespace.sh --verbose --libdir "$at_arg_libdir"],
+           [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Functional Tests])
+  AT_KEYWORDS([target])
+  AT_KEYWORDS([functional])
+  AT_CHECK([$at_arg_wrapper test-proc-info -verbose],   [0], [ignore])
+  AT_CHECK([$at_arg_wrapper test-static-link -verbose], [0], [ignore])
+  AT_CHECK([$at_arg_wrapper test-strerror -verbose],    [0], [ignore])
+
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_CHECK([$at_arg_wrapper Gtest-bt],                [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-bt],                [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Gtest-exc],               [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-exc],               [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Gtest-init],              [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-init],              [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Gtest-concurrent],        [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-concurrent],        [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Gtest-trace],             [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-trace],             [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Gtest-resume-sig],        [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-resume-sig],        [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Gtest-resume-sig-rt],     [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-resume-sig-rt],     [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-init-local-signal], [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-varargs],           [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Lrs-race],                [0], [ignore])
+  AT_CHECK([$at_arg_wrapper test-async-sig],          [0], [ignore])
+  AT_CHECK([$at_arg_wrapper test-flush-cache],        [0], [ignore])
+  AT_CHECK([$at_arg_wrapper test-init-remote],        [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Constraint Tests])
+  AT_KEYWORDS([target])
+  AT_KEYWORDS([constrints])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_CHECK([$at_arg_wrapper Ltest-mem-validate],      [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-nomalloc],          [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Ltest-nocalloc],          [0], [ignore])
+  AT_CHECK([$at_arg_wrapper test-mem],                [0], [ignore])
+  AT_CHECK([$at_arg_wrapper test-reg-state],          [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Arch-specific Tests (x86_64)])
+  AT_KEYWORDS([target x86_64])
+  AT_SKIP_IF([test x$target_arch != xx86_64])
+  AT_CHECK([$at_arg_wrapper Gx64-test-dwarf-expressions], [0], [ignore])
+  AT_CHECK([$at_arg_wrapper Lx64-test-dwarf-expressions], [0], [ignore])
+  AT_CHECK([$at_arg_wrapper x64-unwind-badjmp-signal-frame], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Arch-specific Tests (ia64)])
+  AT_KEYWORDS([target ia64])
+  AT_SKIP_IF([test x$target_arch != xia64])
+  AT_CHECK([$at_arg_wrapper Gia64-test-stack],    [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper Lia64-test-stack],    [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper Gia64-test-nat],      [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper Lia64-test-nat],      [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper Gia64-test-rbs],      [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper Lia64-test-rbs],      [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper Gia64-test-readonly], [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper Lia64-test-readonly], [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper ia64-test-setjmp],    [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper ia64-test-sig],       [0], [ignore], [ignore])
+  AT_SKIP_IF([test x$enable_ptrace != xyes])
+  AT_CHECK([$at_arg_wrapper test-ptrace -t ia64-test-dyn], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Arch-specific Tests (ppc64)])
+  AT_KEYWORDS([target ppc64])
+  AT_SKIP_IF([test x$target_arch != xppc64])
+  AT_SKIP_IF([test x$use_altivec != xyes])
+  AT_CHECK([$at_arg_wrapper ppc64-test-altivec], [0], [ignore], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Setjmp Feature Tests])
+  AT_KEYWORDS([target setjmp])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_SKIP_IF([test x$enable_setjmp != xyes])
+  AT_CHECK([$at_arg_wrapper test-setjmp], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([C++ Exceptions Feature Tests])
+  AT_KEYWORDS([target exception])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_SKIP_IF([test x$enable_cxx_exceptions != xyes])
+  AT_CHECK([$at_arg_wrapper Ltest-cxx-exceptions], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Ptrace Backend Tests])
+  AT_KEYWORDS([target ptrace])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_SKIP_IF([test x$enable_ptrace != xyes])
+  AT_CHECK([$at_arg_wrapper test-ptrace -c -n -t mapper], [0], [ignore])
+  AT_CHECK([$at_arg_wrapper test-ptrace -c -n -t test-ptrace-misc], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Coredump Backend Tests])
+  AT_KEYWORDS([target])
+  AT_KEYWORDS([coredump])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_SKIP_IF([test x$enable_coredump != xyes])
+  AT_CHECK([$at_arg_wrapper run-coredump-unwind], [0], [ignore], [ignore])
+  AT_SKIP_IF([test x$enable_minidebuginfo = xyes])
+  AT_CHECK([$at_arg_wrapper run-coredump-unwind -minidebuginfo], [0], [ignore])
+AT_CLEANUP
+

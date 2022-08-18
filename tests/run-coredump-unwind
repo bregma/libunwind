@@ -37,7 +37,14 @@ TESTDIR=`pwd`
 TEMPDIR=`mktemp --tmpdir -d libunwind-test-XXXXXXXXXX`
 trap "rm -r -- $TEMPDIR" EXIT
 
-cp crasher $TEMPDIR/crasher
+# `crasher` program must be found in $PATH
+CRASHER=$(which crasher)
+if [ -z "$CRASHER" ]; then
+    printf "error: can not find crasher program\n" >2
+    exit 1
+fi
+
+cp $CRASHER $TEMPDIR/crasher
 if [ "$1" = "-minidebuginfo" ]; then
   add_minidebug $TEMPDIR/crasher
 fi
@@ -51,4 +58,4 @@ fi
 COREFILE=$TEMPDIR/core*
 
 # magic option -testcase enables checking for the specific contents of the stack
-./test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`
+test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`

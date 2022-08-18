@@ -1,0 +1,10 @@
+# Configuration variables for autotest
+
+enable_coredump=@enable_coredump@
+enable_cxx_exceptions=@enable_cxx_exceptions@
+enable_minidebuginfo=@enable_minidebuginfo@
+enable_ptrace=@enable_ptrace@
+enable_setjmp=@enable_setjmp@
+remote_only=@remote_only@
+target_arch=@target_arch@
+use_altivec=@use_altivec@
