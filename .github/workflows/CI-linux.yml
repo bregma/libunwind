@@ -69,7 +69,7 @@ jobs:
       - name: Show Logs
         if: ${{ failure() }}
         run: |
-          cat tests/test-suite.log 2>/dev/null
+          cat tests/testsuite.log 2>/dev/null
 
   build-cross-qemu:
     runs-on: ubuntu-latest
@@ -122,8 +122,9 @@ jobs:
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           CROSS_LIB="/usr/${{ matrix.config.host }}"
-          make check TESTSUITEFLAGS="-w qemu-${{ matrix.config.qemu }}-static -v -d" LDFLAGS="-L$CROSS_LIB/lib -static" QEMU_LD_PREFIX="$CROSS_LIB"
+          make check TESTSUITEFLAGS="-w qemu-${{ matrix.config.qemu }}-static -v -d" QEMU_LD_PREFIX="$CROSS_LIB" LD_LIBRARY_PATH=../src/.libs
       - name: Show Logs
         if: ${{ failure() }}
         run: |
+          find . -name testsuite.log
           cat tests/testsuite.log 2>/dev/null
