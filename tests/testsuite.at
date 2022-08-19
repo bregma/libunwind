@@ -42,9 +42,9 @@ AT_CLEANUP
 AT_SETUP([Functional Tests])
   AT_KEYWORDS([target])
   AT_KEYWORDS([functional])
-  AT_CHECK([$at_arg_wrapper test-proc-info -verbose],   [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-static-link -verbose], [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-strerror -verbose],    [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper test-proc-info -v],      [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper test-static-link -v],    [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper test-strerror -v],       [0], [ignore], [ignore])
 
   AT_SKIP_IF([test x$remote_only = xyes])
   AT_CHECK([$at_arg_wrapper Gtest-bt],                [0], [ignore], [ignore])
@@ -116,7 +116,7 @@ AT_SETUP([Setjmp Feature Tests])
   AT_KEYWORDS([target setjmp])
   AT_SKIP_IF([test x$remote_only = xyes])
   AT_SKIP_IF([test x$enable_setjmp != xyes])
-  AT_CHECK([$at_arg_wrapper test-setjmp], [0], [ignore], [ignore])
+  AT_CHECK([$at_arg_wrapper test-setjmp -v], [0], [ignore], [ignore])
 AT_CLEANUP
 
 AT_SETUP([C++ Exceptions Feature Tests])
