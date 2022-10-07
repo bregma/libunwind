@@ -1,4 +1,4 @@
-# host_tests.at - autotest driver for host-only tests
+# testsuite.at - autotest driver
 # 
 # This file is part of libunwind - a platform-independent unwind library
 # 
@@ -32,106 +32,119 @@ AT_ARG_OPTION_ARG([libdir],
 AT_ARG_OPTION_ARG([wrapper w],
     AS_HELP_STRING([--wrapper -w], [execution wrapper (eg. qemu, time)]))
 
+m4_define([UNW_CHECK],[
+  if test -n "$at_arg_wrapper"; then
+    if test -x "$abs_top_builddir/libtool"; then
+      AT_CHECK([$abs_top_builddir/libtool --mode=execute $at_arg_wrapper $abs_builddir/$1], [0], [stdout], [stderr])
+    else
+      AT_CHECK([$at_arg_wrapper $1], [0], [stdout], [stderr])
+    fi
+  else
+    AT_CHECK([$1], [0], [stdout], [stderr])
+  fi
+])
+
 AT_SETUP([ABI Compliance Checks])
   AT_KEYWORDS([host])
   AT_KEYWORDS([abi])
   AT_CHECK([check-namespace.sh --verbose --libdir "$at_arg_libdir"],
-           [0], [ignore], [ignore])
+           [0], [stdout], [stderr])
 AT_CLEANUP
 
 AT_SETUP([Functional Tests])
   AT_KEYWORDS([target])
   AT_KEYWORDS([functional])
-  AT_CHECK([$at_arg_wrapper test-proc-info -v],      [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-static-link -v],    [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-strerror -v],       [0], [ignore], [ignore])
+
+  UNW_CHECK([test-proc-info -v])
+  UNW_CHECK([test-static-link -v])
+  UNW_CHECK([test-strerror -v])
 
   AT_SKIP_IF([test x$remote_only = xyes])
-  AT_CHECK([$at_arg_wrapper Gtest-bt],                [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-bt],                [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Gtest-exc],               [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-exc],               [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Gtest-init],              [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-init],              [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Gtest-concurrent],        [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-concurrent],        [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Gtest-trace],             [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-trace],             [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Gtest-resume-sig],        [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-resume-sig],        [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Gtest-resume-sig-rt],     [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-resume-sig-rt],     [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-init-local-signal], [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-varargs],           [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Lrs-race],                [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-async-sig],          [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-flush-cache],        [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-init-remote],        [0], [ignore], [ignore])
+  UNW_CHECK([Gtest-bt])
+  UNW_CHECK([Ltest-bt])
+  UNW_CHECK([Gtest-exc])
+  UNW_CHECK([Ltest-exc])
+  UNW_CHECK([Gtest-init])
+  UNW_CHECK([Ltest-init])
+  UNW_CHECK([Gtest-concurrent])
+  UNW_CHECK([Ltest-concurrent])
+  UNW_CHECK([Gtest-trace])
+  UNW_CHECK([Ltest-trace])
+  UNW_CHECK([Gtest-resume-sig])
+  UNW_CHECK([Ltest-resume-sig])
+  UNW_CHECK([Gtest-resume-sig-rt])
+  UNW_CHECK([Ltest-resume-sig-rt])
+  UNW_CHECK([Ltest-init-local-signal])
+  UNW_CHECK([Ltest-varargs])
+  UNW_CHECK([Lrs-race])
+  UNW_CHECK([test-async-sig])
+  UNW_CHECK([test-flush-cache])
+  UNW_CHECK([test-init-remote])
 AT_CLEANUP
 
 AT_SETUP([Constraint Tests])
   AT_KEYWORDS([target])
   AT_KEYWORDS([constrints])
   AT_SKIP_IF([test x$remote_only = xyes])
-  AT_CHECK([$at_arg_wrapper Ltest-mem-validate],      [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-nomalloc],          [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Ltest-nocalloc],          [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-mem],                [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-reg-state],          [0], [ignore], [ignore])
+  UNW_CHECK([Ltest-mem-validate])
+  UNW_CHECK([Ltest-nomalloc])
+  UNW_CHECK([Ltest-nocalloc])
+  UNW_CHECK([test-mem])
+  UNW_CHECK([test-reg-state])
 AT_CLEANUP
 
 AT_SETUP([Arch-specific Tests (x86_64)])
   AT_KEYWORDS([target x86_64])
   AT_SKIP_IF([test x$target_arch != xx86_64])
-  AT_CHECK([$at_arg_wrapper Gx64-test-dwarf-expressions], [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Lx64-test-dwarf-expressions], [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper x64-unwind-badjmp-signal-frame], [0], [ignore], [ignore])
+  UNW_CHECK([Gx64-test-dwarf-expressions])
+  UNW_CHECK([Lx64-test-dwarf-expressions])
+  UNW_CHECK([x64-unwind-badjmp-signal-frame])
 AT_CLEANUP
 
 AT_SETUP([Arch-specific Tests (ia64)])
   AT_KEYWORDS([target ia64])
   AT_SKIP_IF([test x$target_arch != xia64])
-  AT_CHECK([$at_arg_wrapper Gia64-test-stack],    [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Lia64-test-stack],    [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Gia64-test-nat],      [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Lia64-test-nat],      [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Gia64-test-rbs],      [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Lia64-test-rbs],      [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Gia64-test-readonly], [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper Lia64-test-readonly], [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper ia64-test-setjmp],    [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper ia64-test-sig],       [0], [ignore], [ignore])
+  UNW_CHECK([Gia64-test-stack])
+  UNW_CHECK([Lia64-test-stack])
+  UNW_CHECK([Gia64-test-nat])
+  UNW_CHECK([Lia64-test-nat])
+  UNW_CHECK([Gia64-test-rbs])
+  UNW_CHECK([Lia64-test-rbs])
+  UNW_CHECK([Gia64-test-readonly])
+  UNW_CHECK([Lia64-test-readonly])
+  UNW_CHECK([ia64-test-setjmp])
+  UNW_CHECK([ia64-test-sig])
   AT_SKIP_IF([test x$enable_ptrace != xyes])
-  AT_CHECK([$at_arg_wrapper test-ptrace -t ia64-test-dyn], [0], [ignore], [ignore])
+  UNW_CHECK([test-ptrace -t ia64-test-dyn])
 AT_CLEANUP
 
 AT_SETUP([Arch-specific Tests (ppc64)])
   AT_KEYWORDS([target ppc64])
   AT_SKIP_IF([test x$target_arch != xppc64])
   AT_SKIP_IF([test x$use_altivec != xyes])
-  AT_CHECK([$at_arg_wrapper ppc64-test-altivec], [0], [ignore], [ignore])
+  UNW_CHECK([ppc64-test-altivec])
 AT_CLEANUP
 
 AT_SETUP([Setjmp Feature Tests])
   AT_KEYWORDS([target setjmp])
   AT_SKIP_IF([test x$remote_only = xyes])
   AT_SKIP_IF([test x$enable_setjmp != xyes])
-  AT_CHECK([$at_arg_wrapper test-setjmp -v], [0], [ignore], [ignore])
+  UNW_CHECK([test-setjmp -v])
 AT_CLEANUP
 
 AT_SETUP([C++ Exceptions Feature Tests])
   AT_KEYWORDS([target exception])
   AT_SKIP_IF([test x$remote_only = xyes])
   AT_SKIP_IF([test x$enable_cxx_exceptions != xyes])
-  AT_CHECK([$at_arg_wrapper Ltest-cxx-exceptions], [0], [ignore], [ignore])
+  UNW_CHECK([Ltest-cxx-exceptions])
 AT_CLEANUP
 
 AT_SETUP([Ptrace Backend Tests])
   AT_KEYWORDS([target ptrace])
   AT_SKIP_IF([test x$remote_only = xyes])
   AT_SKIP_IF([test x$enable_ptrace != xyes])
-  AT_CHECK([$at_arg_wrapper test-ptrace -c -n -t mapper], [0], [ignore], [ignore])
-  AT_CHECK([$at_arg_wrapper test-ptrace -c -n -t test-ptrace-misc], [0], [ignore], [ignore])
+  UNW_CHECK([test-ptrace -c -n -t mapper])
+  UNW_CHECK([test-ptrace -c -n -t test-ptrace-misc])
 AT_CLEANUP
 
 AT_SETUP([Coredump Backend Tests])
@@ -139,8 +152,8 @@ AT_SETUP([Coredump Backend Tests])
   AT_KEYWORDS([coredump])
   AT_SKIP_IF([test x$remote_only = xyes])
   AT_SKIP_IF([test x$enable_coredump != xyes])
-  AT_CHECK([$at_arg_wrapper run-coredump-unwind], [0], [ignore], [ignore])
+  UNW_CHECK([run-coredump-unwind])
   AT_SKIP_IF([test x$enable_minidebuginfo = xyes])
-  AT_CHECK([$at_arg_wrapper run-coredump-unwind -minidebuginfo], [0], [ignore], [ignore])
+  UNW_CHECK([run-coredump-unwind -minidebuginfo])
 AT_CLEANUP
 

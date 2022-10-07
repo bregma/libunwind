@@ -252,8 +252,8 @@ Lx64_test_dwarf_expressions_LDADD = $(LIBUNWIND_local)
 TESTSUITE = testsuite
 
 EXTRA_DIST += testsuite.at $(TESTSUITE)
-CLEANFILES = $(TESTSUITE)
-DISTCLEANFILES = atconfig atlocal
+CLEANFILES = $(TESTSUITE) atconfig
+DISTCLEANFILES = atlocal
 
 check-local: atconfig $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH=tests --libdir=$(abs_top_builddir)/src/.libs $(TESTSUITEFLAGS)
@@ -270,4 +270,4 @@ AUTOTEST = $(AUTOM4TE) --language=autotest
 $(TESTSUITE): $(srcdir)/testsuite.at package.m4
 	$(AM_V_GEN)$(AUTOTEST) -I '$(srcdir)' -o $@ $@.at
 
-testsuite_SCRIPTS += $(TESTSUITE) atconfig atlocal
+testsuite_SCRIPTS += $(TESTSUITE) atlocal
