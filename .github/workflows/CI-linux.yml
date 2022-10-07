@@ -94,19 +94,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install QEMU
-        # this ensure install latest qemu on ubuntu, apt get version is old
-        env:
-          QEMU_SRC: "http://archive.ubuntu.com/ubuntu/pool/universe/q/qemu"
-          QEMU_VER: "qemu-user-static_4\\.2-.*_amd64.deb$"
-        run: |
-          DEB=`curl -s $QEMU_SRC/ | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 | grep $QEMU_VER | tail -1`
-          wget $QEMU_SRC/$DEB
-          sudo dpkg -i $DEB
       - name: Install ${{ matrix.config.toolchain }}
         run: |
           sudo apt update
-          sudo apt install ${{ matrix.config.toolchain }} -y
+          sudo apt install qemu-${{ matrix.config.qemu }} ${{ matrix.config.toolchain }} -y
       - name: Configure with ${{ matrix.config.cc }}
         run: |
           set -x
@@ -122,7 +113,7 @@ jobs:
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           CROSS_LIB="/usr/${{ matrix.config.host }}"
-          make check TESTSUITEFLAGS="-w qemu-${{ matrix.config.qemu }}-static -v -d" QEMU_LD_PREFIX="$CROSS_LIB" LD_LIBRARY_PATH=../src/.libs
+          make check TESTSUITEFLAGS="-w 'qemu-${{ matrix.config.qemu }} -L $CROSS_LIB'" 
       - name: Show Logs
         if: ${{ failure() }}
         run: |
