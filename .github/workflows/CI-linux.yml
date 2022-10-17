@@ -97,7 +97,7 @@ jobs:
       - name: Install ${{ matrix.config.toolchain }}
         run: |
           sudo apt update
-          sudo apt install qemu-${{ matrix.config.qemu }} ${{ matrix.config.toolchain }} -y
+          sudo apt install qemu-user ${{ matrix.config.toolchain }} -y
       - name: Configure with ${{ matrix.config.cc }}
         run: |
           set -x
