@@ -1,27 +1,20 @@
 dnl Process this file with autoconf to produce a configure script.
 
-define(pkg_major, 1)
-define(pkg_minor, 6)
-define(pkg_extra, -rc1)
-define(pkg_maintainer, libunwind-devel@nongnu.org)
-define(mkvers, $1.$2$3)
-
-AC_INIT([libunwind],[mkvers(pkg_major, pkg_minor, pkg_extra)],[pkg_maintainer])
+AC_INIT([libunwind],[1.6.3pre],[libunwind-devel@nongnu.org])
 AC_CONFIG_SRCDIR(src/mi/backtrace.c)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([1.6 subdir-objects -Wall])
 AM_SILENT_RULES([yes])
-AM_MAINTAINER_MODE
 AC_CONFIG_HEADERS([include/config.h])
+AC_CONFIG_TESTDIR([tests])
 
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_PROG_MAKE_SET
-m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+AM_PROG_AR([:])
 LT_INIT
 AM_PROG_AS
 AM_PROG_CC_C_O
@@ -49,6 +42,8 @@ AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_CHECK_SIZEOF(off_t)
 
+# This should really really not be hard-coded here since it's a GNU/Linux+GCC thing.
+# Hardly the stuff of portable autoconfigury.
 CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
 
 AC_CHECK_MEMBERS([struct dl_phdr_info.dlpi_subs],,,[#include <link.h>])
@@ -83,6 +78,7 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 ]])], [use_altivec=yes],[use_altivec=no])
 AM_CONDITIONAL(USE_ALTIVEC, [test x$use_altivec = xyes])
 AC_MSG_RESULT([$use_altivec])
+AC_SUBST([use_altivec])
 
 AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #ifndef __powerpc64__
@@ -130,6 +126,7 @@ AC_ARG_ENABLE(coredump,
 
 AC_MSG_CHECKING([if we should build libunwind-coredump])
 AC_MSG_RESULT([$enable_coredump])
+AC_SUBST([enable_coredump])
 
 AC_ARG_ENABLE(ptrace,
 	AS_HELP_STRING([--enable-ptrace],[building libunwind-ptrace library]),,
@@ -138,11 +135,15 @@ AC_ARG_ENABLE(ptrace,
 
 AC_MSG_CHECKING([if we should build libunwind-ptrace])
 AC_MSG_RESULT([$enable_ptrace])
+AC_SUBST([enable_ptrace])
 
 AC_ARG_ENABLE(setjmp,
 	AS_HELP_STRING([--enable-setjmp],[building libunwind-setjmp library]),,
         [AS_IF([test x$target_arch = x$host_arch], [enable_setjmp=yes], [enable_setjmp=no])]
 )
+AC_MSG_CHECKING([if we should build libunwind-setjmp])
+AC_MSG_RESULT([$enable_setjmp])
+AC_SUBST([enable_setjmp])
 
 AC_ARG_ENABLE(documentation,
 	AS_HELP_STRING([--disable-documentation],[Disable generating the man pages]),,
@@ -151,6 +152,16 @@ AC_ARG_ENABLE(documentation,
 AC_ARG_ENABLE(tests,
  AS_HELP_STRING([--disable-tests],[Disable tests build]),,
  [enable_tests=yes])
+AC_MSG_CHECKING([if we should enable the test suite])
+AC_MSG_RESULT([$enable_tests])
+AM_CONDITIONAL([CONFIG_TESTS], [test x$enable_tests = xyes])
+AS_IF([test "x$enable_tests" = "xyes"],[
+  AC_CONFIG_FILES([tests/Makefile
+                   tests/atlocal
+                   tests/package.m4])
+  AC_CONFIG_FILES([tests/check-namespace.sh],
+                  [chmod +x tests/check-namespace.sh])
+])
 
 AC_ARG_ENABLE(weak-backtrace,
  AS_HELP_STRING([--disable-weak-backtrace],[Do not provide the weak 'backtrace' symbol.]),,
@@ -163,17 +174,16 @@ AC_ARG_ENABLE(unwind-header,
 AC_MSG_CHECKING([if we should export unwind.h])
 AC_MSG_RESULT([$enable_unwind_header])
 
-AC_MSG_CHECKING([if we should build libunwind-setjmp])
-AC_MSG_RESULT([$enable_setjmp])
-
 AC_MSG_CHECKING([for build architecture])
 AC_MSG_RESULT([$build_arch])
 AC_MSG_CHECKING([for host architecture])
 AC_MSG_RESULT([$host_arch])
 AC_MSG_CHECKING([for target architecture])
 AC_MSG_RESULT([$target_arch])
+AC_SUBST([target_arch])
 AC_MSG_CHECKING([for target operating system])
 AC_MSG_RESULT([$target_os])
+AC_SUBST([target_os])
 
 AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
 AM_CONDITIONAL(BUILD_PTRACE, test x$enable_ptrace = xyes)
@@ -222,13 +232,10 @@ AM_CONDITIONAL(USE_DWARF, [test x$use_dwarf = xyes])
 AC_MSG_RESULT([$use_dwarf])
 
 AC_MSG_CHECKING([whether to restrict build to remote support])
-if test x$target_arch != x$host_arch; then
-  CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
-  remote_only=yes
-else
-  remote_only=no
-fi
+AM_COND_IF([REMOTE_ONLY],[remote_only=yes],[remote_only=no])
 AC_MSG_RESULT([$remote_only])
+AS_IF([test x$remote_only = xyes], [CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"])
+AC_SUBST([remote_only])
 
 AC_MSG_CHECKING([whether to enable debug support])
 AC_ARG_ENABLE(debug,
@@ -318,6 +325,7 @@ if test x$enable_minidebuginfo != xno; then
     fi])
 fi
 AC_SUBST([LIBLZMA])
+AC_SUBST([enable_minidebuginfo])
 AM_CONDITIONAL(HAVE_LZMA, test x$enable_minidebuginfo = xyes)
 
 LIBZ=
@@ -417,12 +425,6 @@ CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
 arch="$target_arch"
 ARCH=`echo $target_arch | tr [a-z] [A-Z]`
 
-dnl create shell variables from the M4 macros:
-PKG_MAJOR=pkg_major
-PKG_MINOR=pkg_minor
-PKG_EXTRA=pkg_extra
-PKG_MAINTAINER=pkg_maintainer
-
 old_LIBS="$LIBS"
 LIBS=""
 AC_SEARCH_LIBS(backtrace, execinfo)
@@ -446,10 +448,6 @@ AC_SUBST(ARCH)
 AC_SUBST(LDFLAGS_STATIC_LIBCXA)
 AC_SUBST(LDFLAGS_NOSTARTFILES)
 AC_SUBST(LIBCRTS)
-AC_SUBST(PKG_MAJOR)
-AC_SUBST(PKG_MINOR)
-AC_SUBST(PKG_EXTRA)
-AC_SUBST(PKG_MAINTAINER)
 AC_SUBST(enable_cxx_exceptions)
 AC_SUBST(enable_debug_frame)
 AC_SUBST(DLLIB)
@@ -466,10 +464,6 @@ if test "x$enable_documentation" = "xyes"; then
   AC_CONFIG_FILES(doc/Makefile doc/common.tex)
 fi
 
-AM_CONDITIONAL([CONFIG_TESTS], [test x$enable_tests = xyes])
-if test "x$enable_tests" = "xyes"; then
-  AC_CONFIG_FILES(tests/Makefile tests/check-namespace.sh)
-fi
 
 AM_CONDITIONAL([CONFIG_WEAK_BACKTRACE], [test "x$enable_weak_backtrace" = xyes])
 AM_COND_IF([CONFIG_WEAK_BACKTRACE], [

@@ -1,0 +1,159 @@
+# testsuite.at - autotest driver
+# 
+# This file is part of libunwind - a platform-independent unwind library
+# 
+# Copyright 2022 Stephen M. Webb  <stephen.webb@bregmasoft.ca>
+# 
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+# 
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
+AT_INIT([libunwind tests])
+
+AT_ARG_OPTION_ARG([libdir],
+    AS_HELP_STRING([--libdir], [location of ${PACKAGE} libraries under test]),
+    [], [at_arg_libdir=/usr/lib])
+
+AT_ARG_OPTION_ARG([wrapper w],
+    AS_HELP_STRING([--wrapper -w], [execution wrapper (eg. qemu, time)]))
+
+m4_define([UNW_CHECK],[
+  if test -n "$at_arg_wrapper"; then
+    if test -x "$abs_top_builddir/libtool"; then
+      AT_CHECK([$abs_top_builddir/libtool --mode=execute $at_arg_wrapper $abs_builddir/$1], [0], [stdout], [stderr])
+    else
+      AT_CHECK([$at_arg_wrapper $1], [0], [stdout], [stderr])
+    fi
+  else
+    AT_CHECK([$1], [0], [stdout], [stderr])
+  fi
+])
+
+AT_SETUP([ABI Compliance Checks])
+  AT_KEYWORDS([host])
+  AT_KEYWORDS([abi])
+  AT_CHECK([check-namespace.sh --verbose --libdir "$at_arg_libdir"],
+           [0], [stdout], [stderr])
+AT_CLEANUP
+
+AT_SETUP([Functional Tests])
+  AT_KEYWORDS([target])
+  AT_KEYWORDS([functional])
+
+  UNW_CHECK([test-proc-info -v])
+  UNW_CHECK([test-static-link -v])
+  UNW_CHECK([test-strerror -v])
+
+  AT_SKIP_IF([test x$remote_only = xyes])
+  UNW_CHECK([Gtest-bt])
+  UNW_CHECK([Ltest-bt])
+  UNW_CHECK([Gtest-exc])
+  UNW_CHECK([Ltest-exc])
+  UNW_CHECK([Gtest-init])
+  UNW_CHECK([Ltest-init])
+  UNW_CHECK([Gtest-concurrent])
+  UNW_CHECK([Ltest-concurrent])
+  UNW_CHECK([Gtest-trace])
+  UNW_CHECK([Ltest-trace])
+  UNW_CHECK([Gtest-resume-sig])
+  UNW_CHECK([Ltest-resume-sig])
+  UNW_CHECK([Gtest-resume-sig-rt])
+  UNW_CHECK([Ltest-resume-sig-rt])
+  UNW_CHECK([Ltest-init-local-signal])
+  UNW_CHECK([Ltest-varargs])
+  UNW_CHECK([Lrs-race])
+  UNW_CHECK([test-async-sig])
+  UNW_CHECK([test-flush-cache])
+  UNW_CHECK([test-init-remote])
+AT_CLEANUP
+
+AT_SETUP([Constraint Tests])
+  AT_KEYWORDS([target])
+  AT_KEYWORDS([constrints])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  UNW_CHECK([Ltest-mem-validate])
+  UNW_CHECK([Ltest-nomalloc])
+  UNW_CHECK([Ltest-nocalloc])
+  UNW_CHECK([test-mem])
+  UNW_CHECK([test-reg-state])
+AT_CLEANUP
+
+AT_SETUP([Arch-specific Tests (x86_64)])
+  AT_KEYWORDS([target x86_64])
+  AT_SKIP_IF([test x$target_arch != xx86_64])
+  UNW_CHECK([Gx64-test-dwarf-expressions])
+  UNW_CHECK([Lx64-test-dwarf-expressions])
+  UNW_CHECK([x64-unwind-badjmp-signal-frame])
+AT_CLEANUP
+
+AT_SETUP([Arch-specific Tests (ia64)])
+  AT_KEYWORDS([target ia64])
+  AT_SKIP_IF([test x$target_arch != xia64])
+  UNW_CHECK([Gia64-test-stack])
+  UNW_CHECK([Lia64-test-stack])
+  UNW_CHECK([Gia64-test-nat])
+  UNW_CHECK([Lia64-test-nat])
+  UNW_CHECK([Gia64-test-rbs])
+  UNW_CHECK([Lia64-test-rbs])
+  UNW_CHECK([Gia64-test-readonly])
+  UNW_CHECK([Lia64-test-readonly])
+  UNW_CHECK([ia64-test-setjmp])
+  UNW_CHECK([ia64-test-sig])
+  AT_SKIP_IF([test x$enable_ptrace != xyes])
+  UNW_CHECK([test-ptrace -t ia64-test-dyn])
+AT_CLEANUP
+
+AT_SETUP([Arch-specific Tests (ppc64)])
+  AT_KEYWORDS([target ppc64])
+  AT_SKIP_IF([test x$target_arch != xppc64])
+  AT_SKIP_IF([test x$use_altivec != xyes])
+  UNW_CHECK([ppc64-test-altivec])
+AT_CLEANUP
+
+AT_SETUP([Setjmp Feature Tests])
+  AT_KEYWORDS([target setjmp])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_SKIP_IF([test x$enable_setjmp != xyes])
+  UNW_CHECK([test-setjmp -v])
+AT_CLEANUP
+
+AT_SETUP([C++ Exceptions Feature Tests])
+  AT_KEYWORDS([target exception])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_SKIP_IF([test x$enable_cxx_exceptions != xyes])
+  UNW_CHECK([Ltest-cxx-exceptions])
+AT_CLEANUP
+
+AT_SETUP([Ptrace Backend Tests])
+  AT_KEYWORDS([target ptrace])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_SKIP_IF([test x$enable_ptrace != xyes])
+  UNW_CHECK([test-ptrace -c -n -t mapper])
+  UNW_CHECK([test-ptrace -c -n -t test-ptrace-misc])
+AT_CLEANUP
+
+AT_SETUP([Coredump Backend Tests])
+  AT_KEYWORDS([target])
+  AT_KEYWORDS([coredump])
+  AT_SKIP_IF([test x$remote_only = xyes])
+  AT_SKIP_IF([test x$enable_coredump != xyes])
+  UNW_CHECK([run-coredump-unwind])
+  AT_SKIP_IF([test x$enable_minidebuginfo = xyes])
+  UNW_CHECK([run-coredump-unwind -minidebuginfo])
+AT_CLEANUP
+

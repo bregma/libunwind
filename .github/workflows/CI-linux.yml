@@ -18,7 +18,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: build-${{ join(matrix.*, ' ') }}
+    name: build-${{ matrix.host }}-${{ matrix.opt }}
     strategy:
       fail-fast: false
       matrix:
@@ -69,7 +69,7 @@ jobs:
       - name: Show Logs
         if: ${{ failure() }}
         run: |
-          cat tests/test-suite.log 2>/dev/null
+          cat tests/testsuite.log 2>/dev/null
 
   build-cross-qemu:
     runs-on: ubuntu-latest
@@ -94,25 +94,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install QEMU
-        # this ensure install latest qemu on ubuntu, apt get version is old
-        env:
-          QEMU_SRC: "http://archive.ubuntu.com/ubuntu/pool/universe/q/qemu"
-          QEMU_VER: "qemu-user-static_4\\.2-.*_amd64.deb$"
-        run: |
-          DEB=`curl -s $QEMU_SRC/ | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 | grep $QEMU_VER | tail -1`
-          wget $QEMU_SRC/$DEB
-          sudo dpkg -i $DEB
       - name: Install ${{ matrix.config.toolchain }}
         run: |
           sudo apt update
-          sudo apt install ${{ matrix.config.toolchain }} -y
-      - name: Configure with ${{ matrix.config.cc }}
+          sudo apt install qemu-user ${{ matrix.config.toolchain }} -y
+      - name: Configure for ${{ matrix.config.host }}
         run: |
           set -x
           autoreconf -i
           BUILD=x86_64-linux-gnu
-          ./configure --build=$BUILD --host=${{ matrix.config.host }} --with-testdriver=$(pwd)/scripts/qemu-test-driver
+          ./configure --build=$BUILD --host=${{ matrix.config.host }}
       - name: Build
         run: |
           make -j8
@@ -122,8 +113,9 @@ jobs:
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           CROSS_LIB="/usr/${{ matrix.config.host }}"
-          make -j8 check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" LDFLAGS="-L$CROSS_LIB/lib -static" QEMU_LD_PREFIX="$CROSS_LIB"
+          make check TESTSUITEFLAGS="-k functional -w 'qemu-${{ matrix.config.qemu }} -L $CROSS_LIB'" 
       - name: Show Logs
         if: ${{ failure() }}
         run: |
-          cat tests/test-suite.log 2>/dev/null
+          find . -name testsuite.log
+          cat tests/testsuite.log 2>/dev/null

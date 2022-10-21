@@ -1,17 +1,27 @@
 #!/bin/sh
 verbose=false
-if [ "$1" = "-v" ]; then
-    verbose=true
+libdir=../src/.libs
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -v | --verbose)
+            verbose=true
+            ;;
+        -l | --libdir)
+            libdir=$2
+            shift
+            ;;
+    esac
     shift
-fi
+done 
 
 build_plat=@build_arch@
 plat=@arch@
 os=@target_os@
 num_errors=0
 
-LIBUNWIND=../src/.libs/libunwind.so
-LIBUNWIND_GENERIC=../src/.libs/libunwind-${plat}.so
+LIBUNWIND=$libdir/libunwind.so
+LIBUNWIND_GENERIC=$libdir/libunwind-${plat}.so
 
 fetch_symtab () {
     filename=$1

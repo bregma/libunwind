@@ -1,89 +1,89 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 AM_CFLAGS = -fno-optimize-sibling-calls
 
-LOG_DRIVER = $(SHELL) $(UNW_TESTDRIVER)
+EXTRA_DIST = Gtest-nomalloc.c perf-startup
 
-EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
-		run-check-namespace run-coredump-unwind \
-		run-coredump-unwind-mdi check-namespace.sh.in \
-		Gtest-nomalloc.c
+testsuitedir = $(exec_prefix)/libexec/$(PACKAGE_NAME)
 
-MAINTAINERCLEANFILES = Makefile.in
-
-noinst_PROGRAMS_arch =
-noinst_PROGRAMS_cdep =
-noinst_PROGRAMS_common =
-check_PROGRAMS_arch =
-check_PROGRAMS_cdep =
-check_PROGRAMS_common = test-proc-info test-static-link \
-			test-strerror
-check_SCRIPTS_arch =
-check_SCRIPTS_cdep =
-check_SCRIPTS_common =	run-check-namespace
+#
+# These programs and scripts always get built and installed.
+#
+testsuite_PROGRAMS = test-proc-info \
+                     test-static-link \
+                     test-strerror
+testsuite_SCRIPTS = check-namespace.sh
 
 if REMOTE_ONLY
 
 perf:
 
-else
+else !REMOTE_ONLY
  LIBUNWIND_local = $(top_builddir)/src/libunwind.la
 if ARCH_IA64
- noinst_PROGRAMS_arch += ia64-test-dyn1
- check_SCRIPTS_arch +=	run-ia64-test-dyn1
- check_PROGRAMS_arch +=	Gia64-test-stack Lia64-test-stack		\
-			Gia64-test-nat Lia64-test-nat			\
-			Gia64-test-rbs Lia64-test-rbs			\
-			Gia64-test-readonly Lia64-test-readonly		\
-			ia64-test-setjmp ia64-test-sig
-else #!ARCH_IA64
+ testsuite_PROGRAMS += ia64-test-dyn1 \
+                       Gia64-test-stack Lia64-test-stack \
+                       Gia64-test-nat Lia64-test-nat \
+                       Gia64-test-rbs Lia64-test-rbs \
+                       Gia64-test-readonly Lia64-test-readonly \
+                       Gtest-dyn1 Ltest-dyn1 \
+                       ia64-test-setjmp ia64-test-sig
+else !ARCH_IA64
 if ARCH_PPC64
 if USE_ALTIVEC
- noinst_PROGRAMS_arch += ppc64-test-altivec
-endif #USE_ALTIVEC
-else  #!ARCH_PPC64
+ testsuite_PROGRAMS += ppc64-test-altivec
+endif USE_ALTIVEC
+else  !ARCH_PPC64
 if ARCH_X86_64
- check_PROGRAMS_arch +=	Gx64-test-dwarf-expressions Lx64-test-dwarf-expressions x64-unwind-badjmp-signal-frame
-endif #ARCH X86_64
-endif #!ARCH_PPC64
-endif #!ARCH_IA64
- check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
-			Gtest-init Ltest-init				 \
-			Gtest-concurrent Ltest-concurrent		 \
-			Gtest-resume-sig Ltest-resume-sig		 \
-			Gtest-resume-sig-rt Ltest-resume-sig-rt		 \
-			Gtest-trace Ltest-trace				 \
-			Ltest-init-local-signal				 \
-			Ltest-mem-validate				 \
-			test-async-sig test-flush-cache test-init-remote \
-			test-mem test-reg-state Ltest-varargs		 \
-			Ltest-nomalloc Ltest-nocalloc Lrs-race
- noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
-			Gperf-trace Lperf-trace
+ testsuite_PROGRAMS += Gx64-test-dwarf-expressions \
+                       Lx64-test-dwarf-expressions \
+                       x64-unwind-badjmp-signal-frame
+endif ARCH_X86_64
+endif !ARCH_PPC64
+endif !ARCH_IA64
+
+ testsuite_PROGRAMS += Gtest-bt            Ltest-bt \
+                       Gtest-concurrent    Ltest-concurrent \
+                       Gtest-exc           Ltest-exc \
+                       Gtest-init          Ltest-init \
+                       Gtest-resume-sig    Ltest-resume-sig \
+                       Gtest-resume-sig-rt Ltest-resume-sig-rt \
+                       Gtest-trace         Ltest-trace \
+                       Lrs-race \
+                       Ltest-init-local-signal \
+                       Ltest-mem-validate \
+                       Ltest-nocalloc \
+                       Ltest-nomalloc \
+                       Ltest-varargs \
+                       test-async-sig \
+                       test-flush-cache \
+                       test-init-remote \
+                       test-mem \
+                       test-reg-state
+
+ noinst_PROGRAMS_cdep = forker \
+                        Gperf-simple Lperf-simple \
+                        Gperf-trace Lperf-trace
 
 if BUILD_PTRACE
- check_SCRIPTS_cdep += run-ptrace-mapper run-ptrace-misc
- check_PROGRAMS_cdep += test-ptrace
- noinst_PROGRAMS_cdep += mapper test-ptrace-misc
-endif
+ testsuite_PROGRAMS += test-ptrace mapper test-ptrace-misc
+endif BUILD_PTRACE
 
 if BUILD_SETJMP
- check_PROGRAMS_cdep += test-setjmp
-endif
+ testsuite_PROGRAMS += test-setjmp
+endif BUILD_SETJMP
 
 if SUPPORT_CXX_EXCEPTIONS
- check_PROGRAMS_cdep += Ltest-cxx-exceptions
-endif
+ testsuite_PROGRAMS += Ltest-cxx-exceptions
+endif SUPPORT_CXX_EXCEPTIONS
 
-if OS_LINUX
 if BUILD_COREDUMP
- check_SCRIPTS_cdep += run-coredump-unwind
- noinst_PROGRAMS_cdep += crasher test-coredump-unwind
+if OS_LINUX
+ coredump_scripts = run-coredump-unwind
 
-if HAVE_LZMA
- check_SCRIPTS_cdep += run-coredump-unwind-mdi
-endif # HAVE_LZMA
-endif # BUILD_COREDUMP
-endif # OS_LINUX
+ testsuite_PROGRAMS += crasher test-coredump-unwind
+ testsuite_SCRIPTS += $(coredump_scripts)
+endif OS_LINUX
+endif BUILD_COREDUMP
 
 perf: perf-startup Gperf-simple Lperf-simple Lperf-trace
 	@echo "########## Basic performance of generic libunwind:"
@@ -95,20 +95,12 @@ perf: perf-startup Gperf-simple Lperf-simple Lperf-trace
 	@echo "########## Startup overhead:"
 	@$(srcdir)/perf-startup @arch@
 
-endif
+endif !REMOTE_ONLY
 
-check_PROGRAMS = $(check_PROGRAMS_common) $(check_PROGRAMS_cdep) \
-		 $(check_PROGRAMS_arch)
-check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
-		$(check_SCRIPTS_arch)
+EXTRA_DIST += $(coredump_scripts)
 
-
-TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 XFAIL_TESTS =
 
-if ARCH_IA64
- check_PROGRAMS_cdep += Gtest-dyn1 Ltest-dyn1
-endif
 
 # Use if arch defines but does not support PTRACE_SINGLESTEP
 # ptrace request used in the tests.
@@ -134,8 +126,7 @@ if NO_PTRACE_TEST
  XFAIL_TESTS += run-ptrace-mapper test-ptrace Ltest-init-local-signal
 endif
 
-noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
-	$(noinst_PROGRAMS_arch)
+noinst_PROGRAMS = $(noinst_PROGRAMS_cdep)
 
 Lia64_test_readonly_SOURCES = Lia64-test-readonly.c ia64-test-readonly-asm.S
 Gia64_test_readonly_SOURCES = Gia64-test-readonly.c ia64-test-readonly-asm.S
@@ -257,3 +248,26 @@ ppc64_test_altivec_LDADD = $(LIBUNWIND)
 
 Gx64_test_dwarf_expressions_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Lx64_test_dwarf_expressions_LDADD = $(LIBUNWIND_local)
+
+TESTSUITE = testsuite
+
+EXTRA_DIST += testsuite.at $(TESTSUITE)
+CLEANFILES = $(TESTSUITE) atconfig
+DISTCLEANFILES = atlocal
+
+check-local: atconfig $(TESTSUITE)
+	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH=tests --libdir=$(abs_top_builddir)/src/.libs $(TESTSUITEFLAGS)
+
+installcheck-local: atconfig $(TESTSUITE)
+	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
+
+clean-local:
+	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
+
+AUTOM4TE = $(SHELL) $(top_srcdir)/config/missing --run autom4te
+AUTOTEST = $(AUTOM4TE) --language=autotest
+
+$(TESTSUITE): $(srcdir)/testsuite.at package.m4
+	$(AM_V_GEN)$(AUTOTEST) -I '$(srcdir)' -o $@ $@.at
+
+testsuite_SCRIPTS += $(TESTSUITE) atlocal
