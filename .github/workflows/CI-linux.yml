@@ -98,7 +98,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install qemu-user ${{ matrix.config.toolchain }} -y
-      - name: Configure with ${{ matrix.config.cc }}
+      - name: Configure for ${{ matrix.config.host }}
         run: |
           set -x
           autoreconf -i
@@ -113,7 +113,7 @@ jobs:
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           CROSS_LIB="/usr/${{ matrix.config.host }}"
-          make check TESTSUITEFLAGS="-w 'qemu-${{ matrix.config.qemu }} -L $CROSS_LIB'" 
+          make check TESTSUITEFLAGS="-k functional -w 'qemu-${{ matrix.config.qemu }} -L $CROSS_LIB'" 
       - name: Show Logs
         if: ${{ failure() }}
         run: |
