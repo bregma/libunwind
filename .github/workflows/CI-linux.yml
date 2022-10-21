@@ -18,7 +18,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: build-${{ join(matrix.*, ' ') }}
+    name: build-${{ matrix.host }}-${{ matrix.opt }}
     strategy:
       fail-fast: false
       matrix:
