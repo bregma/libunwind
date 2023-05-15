@@ -160,19 +160,17 @@ establish_machine_state (struct cursor *c)
 
   Debug (8, "copying out cursor state\n");
 
-  for (reg = 0; reg <= UNW_AARCH64_V31; ++reg)
+  for (reg = 0; reg <= UNW_AARCH64_RA_SIGN_STATE; ++reg)
     {
       Debug (16, "copying %s %d\n", unw_regname (reg), reg);
-      if (unw_is_fpreg (reg))
-        {
-          if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
-            as->acc.access_fpreg (as, reg, &fpval, 1, arg);
-        }
-      else
-        {
-          if (tdep_access_reg (c, reg, &val, 0) >= 0)
-            as->acc.access_reg (as, reg, &val, 1, arg);
-        }
+      if (tdep_access_reg (c, reg, &val, 0) >= 0)
+        as->acc.access_reg (as, reg, &val, 1, arg);
+    }
+  for (reg = UNW_AARCH64_V0; reg <= UNW_AARCH64_V31; ++reg)
+    {
+      Debug (16, "copying %s %d\n", unw_regname (reg), reg);
+      if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
+        as->acc.access_fpreg (as, reg, &fpval, 1, arg);
     }
 }
 
