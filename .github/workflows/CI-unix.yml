@@ -135,7 +135,7 @@ jobs:
           CROSS_LIB="/usr/${{ matrix.config.host }}"
           make -j8 check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" LDFLAGS="-L$CROSS_LIB/lib -static" QEMU_LD_PREFIX="$CROSS_LIB"
         env:
-          UNW_DEBUG_LEVEL: 4
+          UNW_DEBUG_LEVEL: 16
 
       - name: Show Logs
         if: ${{ failure() }}
