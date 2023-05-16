@@ -75,6 +75,8 @@ uc_addr (unw_tdep_context_t *uc, int reg)
     return &uc->uc_mcontext.sp;
   else if (reg == UNW_AARCH64_PC)
     return &uc->uc_mcontext.pc;
+  else if (reg == UNW_AARCH64_PSTATE)
+    return &uc->uc_mcontext.pstate;
   else if (reg >= UNW_AARCH64_V0 && reg <= UNW_AARCH64_V31)
     return &GET_FPCTX(uc)->vregs[reg - UNW_AARCH64_V0];
   else
