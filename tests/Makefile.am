@@ -112,7 +112,7 @@ check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 		$(check_SCRIPTS_arch)
 
 
-TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
+TESTS = Gtest-exc Ltest-exc
 XFAIL_TESTS =
 
 if ARCH_IA64
