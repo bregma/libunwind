@@ -384,29 +384,26 @@ struct unw_debug_frame_list
   };
 
 /* Convenience macros: */
-#define dwarf_init                      UNW_ARCH_OBJ (dwarf_init)
-#define dwarf_callback                  UNW_OBJ (dwarf_callback)
-#define dwarf_find_proc_info            UNW_OBJ (dwarf_find_proc_info)
-#define dwarf_find_debug_frame          UNW_OBJ (dwarf_find_debug_frame)
-#define dwarf_search_unwind_table       UNW_OBJ (dwarf_search_unwind_table)
-#define dwarf_find_unwind_table         UNW_OBJ (dwarf_find_unwind_table)
-#define dwarf_put_unwind_info           UNW_OBJ (dwarf_put_unwind_info)
-#define dwarf_put_unwind_info           UNW_OBJ (dwarf_put_unwind_info)
-#define dwarf_eval_expr                 UNW_OBJ (dwarf_eval_expr)
-#define dwarf_stack_aligned             UNW_OBJ (dwarf_stack_aligned)
-#define dwarf_extract_proc_info_from_fde \
-                UNW_OBJ (dwarf_extract_proc_info_from_fde)
-#define dwarf_find_save_locs            UNW_OBJ (dwarf_find_save_locs)
-#define dwarf_make_proc_info            UNW_OBJ (dwarf_make_proc_info)
-#define dwarf_apply_reg_state           UNW_OBJ (dwarf_apply_reg_state)
-#define dwarf_reg_states_iterate        UNW_OBJ (dwarf_reg_states_iterate)
-#define dwarf_read_encoded_pointer      UNW_OBJ (dwarf_read_encoded_pointer)
-#define dwarf_step                      UNW_OBJ (dwarf_step)
-#define dwarf_flush_rs_cache            UNW_OBJ (dwarf_flush_rs_cache)
+#define dwarf_init                       UNW_ARCH_OBJ (dwarf_init)
+#define dwarf_find_proc_info             UNW_OBJ (dwarf_find_proc_info)
+#define dwarf_find_debug_frame           UNW_OBJ (dwarf_find_debug_frame)
+#define dwarf_search_unwind_table        UNW_OBJ (dwarf_search_unwind_table)
+#define dwarf_find_unwind_table          UNW_OBJ (dwarf_find_unwind_table)
+#define dwarf_put_unwind_info            UNW_OBJ (dwarf_put_unwind_info)
+#define dwarf_put_unwind_info            UNW_OBJ (dwarf_put_unwind_info)
+#define dwarf_eval_expr                  UNW_OBJ (dwarf_eval_expr)
+#define dwarf_stack_aligned              UNW_OBJ (dwarf_stack_aligned)
+#define dwarf_extract_proc_info_from_fde UNW_OBJ (dwarf_extract_proc_info_from_fde)
+#define dwarf_find_save_locs             UNW_OBJ (dwarf_find_save_locs)
+#define dwarf_make_proc_info             UNW_OBJ (dwarf_make_proc_info)
+#define dwarf_apply_reg_state            UNW_OBJ (dwarf_apply_reg_state)
+#define dwarf_reg_states_iterate         UNW_OBJ (dwarf_reg_states_iterate)
+#define dwarf_read_encoded_pointer       UNW_OBJ (dwarf_read_encoded_pointer)
+#define dwarf_step                       UNW_OBJ (dwarf_step)
+#define dwarf_flush_rs_cache             UNW_OBJ (dwarf_flush_rs_cache)
 
 extern int dwarf_init (void);
 #ifndef UNW_REMOTE_ONLY
-extern int dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr);
 extern int dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
                                  unw_proc_info_t *pi,
                                  int need_unwind_info, void *arg);
@@ -429,9 +426,8 @@ extern void dwarf_put_unwind_info (unw_addr_space_t as,
 extern int dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t stack_val, unw_word_t *addr,
                             unw_word_t len, unw_word_t *valp,
                             int *is_register);
-extern int
-dwarf_stack_aligned(struct dwarf_cursor *c, unw_word_t cfa_addr,
-                    unw_word_t rbp_addr, unw_word_t *offset);
+extern int dwarf_stack_aligned(struct dwarf_cursor *c, unw_word_t cfa_addr,
+                               unw_word_t rbp_addr, unw_word_t *offset);
 
 extern int dwarf_extract_proc_info_from_fde (unw_addr_space_t as,
                                              unw_accessors_t *a,
