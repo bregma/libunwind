@@ -1,5 +1,7 @@
+.\" *********************************** start of \input{common.tex}
+.\" *********************************** end of \input{common.tex}
 '\" t
-.\" Manual page created with latex2man on Sun Aug 29 23:45:06 CEST 2021
+.\" Manual page created with latex2man on Tue Aug 29 12:09:48 2023
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +12,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND\-DYNAMIC" "3" "29 August 2021" "Programming Library " "Programming Library "
+.TH "LIBUNWIND\-DYNAMIC" "3libunwind" "29 August 2023" "Programming Library " "Programming Library "
 .SH NAME
 libunwind\-dynamic
 \-\- libunwind\-support for runtime\-generated code 
@@ -98,7 +100,7 @@ contrast, most CISC use variable\-length instruction encodings, so it
 is usually necessary to use a byte\-offset as the index. Given the 
 instruction index, the operation descriptor specifies the effect of 
 the instruction in an abstract manner. For example, it might express 
-that the instruction stores calle\-saved register r1
+that the instruction stores callee\-saved register r1
 at offset 16 
 in the stack frame. 
 .PP
@@ -173,19 +175,18 @@ The format of these sub\-members is described in detail below.
 .SS PROC\-INFO FORMAT
 .PP
 This is the preferred dynamic unwind\-info format and it is generally 
-the one used by full\-blown runtime code\-generators. In this format, 
+the one used by full\-blown runtime code generators. In this format, 
 the details of a procedure are described by a structure of type 
 unw_dyn_proc_info_t\&.
 This structure contains the following 
 members: 
 .PP
-.RE
 .TP
 unw_word_t name_ptr
  The address of a 
 (human\-readable) name of the procedure or 0 if no such name is 
 available. If non\-zero, the string stored at this address must be 
-ASCII NUL terminated. For source languages that use name\-mangling 
+ASCII NUL terminated. For source languages that use name mangling 
 (such as C++ or Java) the string stored at this address should be 
 the \fIdemangled\fP
 version of the name. 
@@ -193,7 +194,7 @@ version of the name.
 .TP
 unw_word_t handler
  The address of the 
-personality\-routine for this procedure. Personality\-routines are 
+personality routine for this procedure. Personality routines are 
 used in conjunction with exception handling. See the C++ ABI draft 
 (http://www.codesourcery.com/cxx\-abi/) for an overview and a 
 description of the personality routine. If the procedure has no 
@@ -209,7 +210,7 @@ set to 0.
 .TP
 unw_dyn_region_info_t *regions
  A NULL\-terminated 
-linked list of region\-descriptors. See section ``Region 
+linked list of region descriptors. See section ``Region 
 descriptors\&'' below for more details. 
 .PP
 .SS TABLE\-INFO FORMAT
@@ -251,7 +252,7 @@ counted in units of words
 .TP
 unw_word_t table_data
  A pointer to the actual 
-data encoding the unwind\-info. The exact format is 
+data encoding the unwind info. The exact format is 
 architecture\-specific (see architecture\-specific sections below). 
 .PP
 .SS REMOTE TABLE\-INFO FORMAT
@@ -269,14 +270,14 @@ via the address\-space\&'s access_mem()
 call\-back, rather than 
 through a direct memory reference. 
 .PP
-From the point of view of a runtime\-code generator, the remote 
+From the point of view of a runtime code generator, the remote 
 table\-info format offers no advantage and it is expected that such 
 generators will describe their procedures either with the proc\-info 
 format or the normal table\-info format. The main reason that the 
 remote table\-info format exists is to enable the 
 address\-space\-specific find_proc_info()
 callback (see 
-unw_create_addr_space(3))
+unw_create_addr_space(3libunwind))
 to return unwind tables whose 
 data remains in remote memory. This can speed up unwinding (e.g., for 
 a debugger) because it reduces the amount of data that needs to be 
@@ -523,9 +524,9 @@ POP_FRAMES otherwise
 .SH SEE ALSO
 
 .PP
-libunwind(3),
-_U_dyn_register(3),
-_U_dyn_cancel(3)
+libunwind(3libunwind),
+_U_dyn_register(3libunwind),
+_U_dyn_cancel(3libunwind)
 .PP
 .SH AUTHOR
 

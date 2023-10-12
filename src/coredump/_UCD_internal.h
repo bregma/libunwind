@@ -46,6 +46,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind-coredump.h>
 
 #include "libunwind_i.h"
+#include "ucd_file_table.h"
 
 
 #if SIZEOF_OFF_T == 4
@@ -62,17 +63,14 @@ typedef uint64_t uoff_t;
  */
 struct coredump_phdr
   {
-    uint32_t p_type;
-    uint32_t p_flags;
-    uoff_t   p_offset;
-    uoff_t   p_vaddr;
-    uoff_t   p_filesz;
-    uoff_t   p_memsz;
-    uoff_t   p_align;
-    /* Data for backing file. If backing_fd < 0, there is no file */
-    uoff_t   backing_filesize;
-    char    *backing_filename; /* for error meesages only */
-    int      backing_fd;
+    uint32_t         p_type;
+    uint32_t         p_flags;
+    uoff_t           p_offset;
+    uoff_t           p_vaddr;
+    uoff_t           p_filesz;
+    uoff_t           p_memsz;
+    uoff_t           p_align;
+    ucd_file_index_t p_backing_file_index;
   };
 
 typedef struct coredump_phdr coredump_phdr_t;
@@ -82,7 +80,11 @@ typedef struct elf_prstatus UCD_proc_status_t;
 #elif defined(HAVE_STRUCT_PRSTATUS)
 typedef struct prstatus UCD_proc_status_t;
 #elif defined(HAVE_PROCFS_STATUS)
-typedef procfs_status UCD_proc_status_t;
+typedef struct {
+    procfs_status thread;
+    procfs_greg   greg;
+    procfs_fpreg  fpreg;
+} UCD_proc_status_t;
 #else
 # error UCD_proc_status_t undefined
 #endif
@@ -90,7 +92,9 @@ typedef procfs_status UCD_proc_status_t;
 struct UCD_thread_info
   {
     UCD_proc_status_t  prstatus;
+#ifdef HAVE_ELF_FPREGSET_T
     elf_fpregset_t     fpregset;
+#endif
   };
 
 struct UCD_info
@@ -100,9 +104,12 @@ struct UCD_info
     char                   *coredump_filename; /* for error meesages only */
     coredump_phdr_t        *phdrs;             /* array, allocated */
     unsigned                phdrs_count;
+    ucd_file_table_t        ucd_file_table;
     void                   *note_phdr;         /* allocated or NULL */
     UCD_proc_status_t      *prstatus;          /* points inside note_phdr */
+#ifdef HAVE_ELF_FPREGSET_T
     elf_fpregset_t         *fpregset;
+#endif
     int                     n_threads;
     struct UCD_thread_info *threads;
     struct elf_dyn_info     edi;
