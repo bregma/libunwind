@@ -63,7 +63,7 @@ nodist_include_HEADERS = include/libunwind-common.h
 SUBDIRS = src
 
 if CONFIG_TESTS
-SUBDIRS += tests
+SUBDIRS += third-party/libcheck tests
 endif
 
 if CONFIG_DOCS

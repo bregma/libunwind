@@ -248,6 +248,7 @@ AM_COND_IF([CONFIG_TESTS], [
                         [AC_SUBST([BACKTRACELIB],["$ac_cv_search_backtrace"])])])
   LIBS="$old_LIBS"
   AC_CONFIG_FILES(tests/Makefile tests/check-namespace.sh)
+  AC_CONFIG_SUBDIRS([third-party/libcheck])
 ])
 AC_ARG_WITH([testdriver],
             [AS_HELP_STRING([--with-testdriver],
