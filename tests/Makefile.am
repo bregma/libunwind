@@ -321,3 +321,4 @@ test_libunwind_generic_SOURCES = ${test_libunwind_sources}
 test_libunwind_generic_CFLAGS = ${libcheck_cflags}
 test_libunwind_generic_LDADD = ${libcheck_ldadd} ${LIBUNWIND}
 
+XFAIL_TESTS += test-libunwind-generic

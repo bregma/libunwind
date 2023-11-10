@@ -249,6 +249,7 @@ AM_COND_IF([CONFIG_TESTS], [
   LIBS="$old_LIBS"
   AC_CONFIG_FILES(tests/Makefile tests/check-namespace.sh)
   AC_CONFIG_SUBDIRS([third-party/libcheck])
+  ac_configure_args="--disable-subunit --enable-silent-rules=yes $ac_configure_args"
 ])
 AC_ARG_WITH([testdriver],
             [AS_HELP_STRING([--with-testdriver],

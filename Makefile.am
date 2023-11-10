@@ -64,6 +64,10 @@ SUBDIRS = src
 
 if CONFIG_TESTS
 SUBDIRS += third-party/libcheck tests
+
+# Don't run unit tests for third-party software
+check-recursive:
+	$(MAKE) -C tests check
 endif
 
 if CONFIG_DOCS
