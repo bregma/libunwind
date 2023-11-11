@@ -15,7 +15,6 @@ Makefile.in
 
 INSTALL
 aclocal.m4
-m4/
 autom4te.cache/
 aux
 config.log
@@ -23,6 +22,12 @@ config.status
 config/
 configure
 libtool
+
+libtool.m4
+lt~obsolete.m4
+ltoptions.m4
+ltsugar.m4
+ltversion.m4
 
 doc/common.tex
 
@@ -86,3 +91,13 @@ tests/[GL]arm64-test-sve-signal
 tests/aarch64-test-plt
 tests/*.log
 tests/*.trs
+
+third-party/libcheck/config.guess
+third-party/libcheck/config.h.in
+third-party/libcheck/config.sub
+third-party/libcheck/doc/check.info
+third-party/libcheck/doc/mdate-sh
+third-party/libcheck/doc/stamp-vti
+third-party/libcheck/doc/version.texi
+third-party/libcheck/install-sh
+third-party/libcheck/ltmain.sh

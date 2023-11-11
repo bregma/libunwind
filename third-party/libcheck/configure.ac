@@ -142,11 +142,13 @@ AC_PROG_LN_S
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_LIBTOOL
 
+AC_LANG([C])
+
 # initialize libtool to build .la files
 LT_INIT
 
 # add these options to CFLAGS if the compiler supports them
-AC_DEFUN([AX_CFLAGS_ADD],[AX_C_CHECK_FLAG($1, , , CFLAGS="$CFLAGS $1")])
+AC_DEFUN([AX_CFLAGS_ADD],[AX_CHECK_COMPILE_FLAG($1, [CFLAGS="$CFLAGS $1"])])
 # Do not use the -ansi flag, currently there is a bug in MinGW/MinGW-w64
 # which prevents Check from compiling. Add after this is resolved:
 #    sourceforge.net/p/mingw/bugs/2024
@@ -336,7 +338,8 @@ AC_FUNC_REALLOC
 # Check if the timer_create(), timer_settime(), and timer_delete()
 # functions on the system are available and suitable, or need to be
 # replaced with Check's replacement of these functions.
-HW_LIBRT_TIMERS
+# HW_LIBRT_TIMERS
+AC_REPLACE_FUNCS([timer_create timer_settime timer_delete])
 
 # The following checks will replace missing functions from libcompat
 AC_REPLACE_FUNCS([alarm clock_gettime getline gettimeofday localtime_r strdup strsignal])
