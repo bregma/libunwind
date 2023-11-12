@@ -122,8 +122,10 @@ perf: perf-startup Gperf-simple Lperf-simple Lperf-trace
 
 endif
 
+check_libcheck = test-libunwind-local test-libunwind-generic
+
 check_PROGRAMS = $(check_PROGRAMS_common) $(check_PROGRAMS_cdep) \
-		 $(check_PROGRAMS_arch)
+		 $(check_PROGRAMS_arch) $(check_libcheck)
 check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 		$(check_SCRIPTS_arch)
 
@@ -302,3 +304,21 @@ Lx64_test_dwarf_expressions_LDADD = $(LIBUNWIND_local)
 Garm64_test_sve_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Larm64_test_sve_signal_LDADD = $(LIBUNWIND_local)
 aarch64_test_plt_LDADD = $(LIBUNWIND)
+
+libcheck_dir = ${top_builddir}/third-party/libcheck
+libcheck_cflags = -I${libcheck_dir} -I${libcheck_dir}/src
+libcheck_ldadd = ${libcheck_dir}/src/libcheck.la
+
+test_libunwind_sources = \
+	test-unw_create_addr_space.c \
+	test-libunwind.c
+
+test_libunwind_local_SOURCES = ${test_libunwind_sources}
+test_libunwind_local_CFLAGS = -DUNW_LOCAL_ONLY ${libcheck_cflags}
+test_libunwind_local_LDADD = ${libcheck_ldadd} ${LIBUNWIND_local}
+
+test_libunwind_generic_SOURCES = ${test_libunwind_sources}
+test_libunwind_generic_CFLAGS = ${libcheck_cflags}
+test_libunwind_generic_LDADD = ${libcheck_ldadd} ${LIBUNWIND}
+
+XFAIL_TESTS += test-libunwind-generic
