@@ -36,5 +36,5 @@ jobs:
         env:
           TARGET: ${{ matrix.config.TARGET }}
         run: |
-          cmake -G "${{ matrix.config.toolchain }}" -A ${{ matrix.config.arch }} -S . -B bin/windows-${{ matrix.config.arch }}/${{ matrix.config.TARGET }}
+          cmake -G "${{ matrix.config.toolchain }}" -A ${{ matrix.config.arch }} -S .  -DCMAKE_C_FLAGS_INIT="/W4" -B bin/windows-${{ matrix.config.arch }}/${{ matrix.config.TARGET }}
           cmake --build bin/windows-${{ matrix.config.arch }}/${{ matrix.config.TARGET }}
