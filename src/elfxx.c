@@ -150,6 +150,7 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
                                     void                               *data)
 
 {
+  Debug (1, "==smw> line %d\n", __LINE__);
   struct elf_image *ei = context->ei;
   Elf_W (Addr) load_offset = context->load_offset;
   Elf_W (Addr) file_offset = 0;
@@ -173,9 +174,11 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
       }
     else if (phdr[i].p_type == PT_DYNAMIC)
       {
+  Debug (1, "==smw> line %d\n", __LINE__);
         dyn = (Elf_W (Dyn) *) elf_w (get_program_segment) (ei, &phdr[i], NULL);
         break;
       }
+  Debug (1, "==smw> line %d\n", __LINE__);
 
   if (!dyn)
     return -UNW_ENOINFO;
@@ -203,6 +206,7 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
           break;
         }
     }
+  Debug (1, "==smw> line %d\n", __LINE__);
 
   if (!symtab || !strtab || (!hash && !gnu_hash))
       return -UNW_ENOINFO;
@@ -215,9 +219,11 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
       Elf_W (Word) *bloom  = (Elf_W (Word) *) &gnu_hash[4];
       uint32_t *buckets    = (uint32_t *) (bloom + bloom_size);
 
+  Debug (1, "==smw> line %d nbuckets=%d symoffset=%d bloom_size=%d\n", __LINE__, (int)nbuckets, (int)symoffset, (int)bloom_size);
       for (i = 0; i < nbuckets; i++)
         if (buckets[i] != 0)
           {
+  Debug (1, "==smw> line %d i=%d buckets[i]=%d sym_num=%d\n", __LINE__, i, (int)buckets[i], (int)sym_num);
             if (buckets[i] < sym_num)
               return -UNW_ENOINFO;
             sym_num = buckets[i];
@@ -226,6 +232,13 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
       if (sym_num)
         {
           uint32_t *hashval = buckets + nbuckets + (sym_num - symoffset);
+          if ((char *) hashval >= (char *) ei->image + ei->size)
+            {
+  Debug (1, "==smw> line %d sym_num=%d hashval=%#010lx (which is out of bounds, returning error)\n", __LINE__, (int)sym_num, (long)hashval);
+              return -UNW_ENOINFO;
+            }
+
+  Debug (1, "==smw> line %d sym_num=%d hashval=%#010lx\n", __LINE__, (int)sym_num, (long)hashval);
           do
             sym_num++;
           while (!(*hashval++ & 1));
@@ -233,9 +246,11 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
     }
   else
     {
+  Debug (1, "==smw> line %d\n", __LINE__);
       sym_num = hash[1];
     }
 
+  Debug (1, "==smw> line %d sym_num=%d\n", __LINE__, (int)sym_num);
   for (i = 0; i < sym_num; ++i)
     {
       sym = &symtab[i];
@@ -244,8 +259,10 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
           val = sym->st_value;
           if (sym->st_shndx != SHN_ABS)
             val += load_offset;
+  Debug (1, "==smw> line %d\n", __LINE__);
           if (tdep_get_func_addr (as, val, &val) < 0)
             continue;
+  Debug (1, "==smw> line %d\n", __LINE__);
           Debug (16, "0x%016lx info=0x%02x %s\n",
                  (long) val, sym->st_info, strtab + sym->st_name);
 
@@ -267,6 +284,7 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
         }
     }
 
+  Debug (1, "==smw> line %d\n", __LINE__);
   return ret;
 }
 
@@ -276,6 +294,7 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
                                  symtab_lookup_function_t            symtab_lookup,
                                  void                               *data)
 {
+  Debug (1, "==smw> line %d\n", __LINE__);
   struct elf_image *ei = context->ei;
   Elf_W (Addr) load_offset = context->load_offset;
   size_t syment_size;
@@ -289,10 +308,12 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
   if (!elf_w (valid_object) (ei))
     return -UNW_ENOINFO;
 
+  Debug (1, "==smw> line %d\n", __LINE__);
   shdr = elf_w (section_table) (ei);
   if (!shdr)
     return -UNW_ENOINFO;
 
+  Debug (1, "==smw> line %d\n", __LINE__);
   for (i = 0; i < ehdr->e_shnum && ret == -UNW_ENOINFO; ++i)
     {
       switch (shdr->sh_type)
@@ -307,6 +328,7 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
           if (!strtab)
             break;
 
+  Debug (1, "==smw> line %d\n", __LINE__);
           Debug (16, "symtab=0x%lx[%d]\n",
                  (long) shdr->sh_offset, shdr->sh_type);
 
@@ -320,8 +342,10 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
                   val = sym->st_value;
                   if (sym->st_shndx != SHN_ABS)
                     val += load_offset;
+  Debug (1, "==smw> line %d\n", __LINE__);
                   if (tdep_get_func_addr (as, val, &val) < 0)
                     continue;
+  Debug (1, "==smw> line %d\n", __LINE__);
                   Debug (16, "0x%016lx info=0x%02x %s\n",
                          (long) val, sym->st_info, strtab + sym->st_name);
 
@@ -331,7 +355,9 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
                       .sym      = sym,
                       .start_ip = val
                     };
+  Debug (1, "==smw> line %d\n", __LINE__);
                   ret = symtab_lookup (context, &syminfo, data);
+  Debug (1, "==smw> line %d\n", __LINE__);
 
                   /* Keep going if the IP is not found in this symtab entry. */
                   if (ret == -UNW_ENOINFO)
@@ -351,9 +377,11 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
     }
 
   /* If it wasn't found in the ELF symtab, check the synamic symtab. */
+  Debug (1, "==smw> line %d ret=%d\n", __LINE__, ret);
   if (ret == -UNW_ENOINFO)
     ret = elf_w (lookup_symbol_from_dynamic) (as, context, symtab_lookup, data);
 
+  Debug (1, "==smw> ends returning %d\n", ret);
   return ret;
 }
 
@@ -372,6 +400,7 @@ elf_w (lookup_symbol_callback)(const struct symbol_lookup_context *context,
                                const struct symbol_info           *syminfo,
                                void                               *data)
 {
+  Debug (1, "==smw> line %d\n", __LINE__);
   struct symbol_callback_data *d = data;
   int ret = -UNW_ENOINFO;
 
@@ -400,6 +429,7 @@ elf_w (lookup_symbol_callback)(const struct symbol_lookup_context *context,
         }
     }
 
+  Debug (1, "==smw> ends, returning %d\n", ret);
   return ret;
 }
 
@@ -409,6 +439,7 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
                        Elf_W (Addr) load_offset,
                        char *buf, size_t buf_len, Elf_W (Addr) *min_dist)
 {
+  Debug (1, "==smw> line %d\n", __LINE__);
   struct symbol_lookup_context context =
     {
       .as = as,
@@ -422,10 +453,12 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
       .buf = buf, 
       .buf_len = buf_len,
     };
-  return elf_w (lookup_symbol_closeness) (as,
+   int ret = elf_w (lookup_symbol_closeness) (as,
                                           &context,
                                           elf_w (lookup_symbol_callback),
                                           &data);
+  Debug (1, "==smw> ends, returning %d\n", ret);
+  return ret;
 }
 
 static int
@@ -665,18 +698,24 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
                        unw_word_t ip,
                        char *buf, size_t buf_len, unw_word_t *offp)
 {
+  Debug (1, "==smw> begins\n");
+  Debug (1, "==smw> ei->image=%#010lx ei->size=%zu\n", (long)ei->image, ei->size);
   Elf_W (Addr) load_offset;
   Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
   int ret;
 
+  Debug (1, "==smw> line %d\n", __LINE__);
   load_offset = elf_w (get_load_offset) (ei, segbase);
+  Debug (1, "==smw> line %d\n", __LINE__);
   ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, &min_dist);
+  Debug (1, "==smw> line %d\n", __LINE__);
 
   /* If the ELF image has MiniDebugInfo embedded in it, look up the symbol in
      there as well and replace the previously found if it is closer. */
   struct elf_image mdi;
   if (elf_w (extract_minidebuginfo) (ei, &mdi))
     {
+      Debug (1, "==smw> line %d\n", __LINE__);
       int ret_mdi = elf_w (lookup_symbol) (as, ip, &mdi, load_offset, buf,
                                            buf_len, &min_dist);
 
@@ -686,13 +725,16 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
           ret = ret_mdi;
         }
 
+      Debug (1, "==smw> line %d\n", __LINE__);
       mi_munmap (mdi.image, mdi.size);
     }
 
+  Debug (1, "==smw> line %d\n", __LINE__);
   if (min_dist >= ei->size)
     return -UNW_ENOINFO;                /* not found */
   if (offp)
     *offp = min_dist;
+  Debug (1, "==smw> ends, returning %d at line %d\n", ret, __LINE__);
   return ret;
 }
 
@@ -700,6 +742,7 @@ HIDDEN int
 elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
                        char *buf, size_t buf_len, unw_word_t *offp, void *arg)
 {
+  Debug (1, "==smw> begins\n");
   unsigned long segbase, mapoff;
   struct elf_image ei;
   int ret;
@@ -713,11 +756,13 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   if (ret < 0)
     return ret;
 
+  Debug (1, "==smw> calling get_proc_name_in_image()\n");
   ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, ip, buf, buf_len, offp);
 
   mi_munmap (ei.image, ei.size);
   ei.image = NULL;
 
+  Debug (1, "==smw> ends\n");
   return ret;
 }
 
@@ -760,6 +805,7 @@ HIDDEN int
 elf_w (get_proc_ip_range) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
                            unw_word_t *start, unw_word_t *end, void *arg)
 {
+  Debug (1, "==smw> begins\n");
   unsigned long segbase, mapoff;
   struct elf_image ei;
   int ret;
@@ -773,11 +819,13 @@ elf_w (get_proc_ip_range) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   if (ret < 0)
     return ret;
 
+  Debug (1, "==smw> calling get_proc_ip_range_in_image()\n");
   ret = elf_w (get_proc_ip_range_in_image) (as, &ei, segbase, ip, start, end);
 
   mi_munmap (ei.image, ei.size);
   ei.image = NULL;
 
+  Debug (1, "==smw> ends\n");
   return ret;
 }
 
@@ -940,15 +988,18 @@ elf_w (find_build_id_path) (const struct elf_image *ei, char *path, unsigned pat
 HIDDEN int
 elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
 {
+  Debug (1, "==smw> file=\"%s\" ei=%#010lx is_local=%d\n", file, (long)ei, is_local);
   int ret;
   Elf_W (Shdr) *shdr;
   Elf_W (Ehdr) *prev_image;
   off_t prev_size;
   char path[PATH_MAX];
 
+  Debug (1, "==smw> ei->image=%#010lx\n", (long)ei->image);
   if (!ei->image)
     {
       ret = elf_map_image(ei, file);
+      Debug (1, "==smw> elf_map_image returned %d\n", ret);
       if (ret)
         return ret;
     }
@@ -958,6 +1009,7 @@ elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
 
   /* Ignore separate debug files which contain a .gnu_debuglink section. */
   if (is_local == -1) {
+    Debug (1, "==smw> ignoring separate debug file, returning 0\n");
     return 0;
   }
 
@@ -970,6 +1022,7 @@ elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
       if (ret == 0)
         {
           mi_munmap (prev_image, prev_size);
+          Debug (1, "==smw> returning 0 at line %d\n", __LINE__);
           return 0;
         }
 
@@ -979,9 +1032,11 @@ elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
 
   shdr = elf_w (find_section) (ei, ".gnu_debuglink");
   if (shdr) {
-    if (shdr->sh_size >= PATH_MAX ||
-	(shdr->sh_offset + shdr->sh_size > ei->size))
-      return 0;
+    if (shdr->sh_size >= PATH_MAX || (shdr->sh_offset + shdr->sh_size > ei->size))
+      {
+        Debug (1, "==smw> returning 0 at line %d\n", __LINE__);
+        return 0;
+      }
 
     {
       char linkbuf[shdr->sh_size];
@@ -994,7 +1049,10 @@ elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
       memcpy(linkbuf, link, shdr->sh_size);
 
       if (memchr (linkbuf, 0, shdr->sh_size) == NULL)
-	return 0;
+      	{
+          Debug (1, "==smw> returning 0 at line %d\n", __LINE__);
+	  return 0;
+	}
 
       ei->image = NULL;
 
@@ -1037,6 +1095,7 @@ elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
           ei->image = prev_image;
           ei->size = prev_size;
 
+          Debug (1, "==smw> returning 0 at line %d\n", __LINE__);
           return 0;
         }
       else
@@ -1044,9 +1103,11 @@ elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
           mi_munmap (prev_image, prev_size);
         }
 
+      Debug (1, "==smw> returning %d at line %d\n", ret, __LINE__);
       return ret;
     }
   }
 
+  Debug (1, "==smw> returning 0 at line %d\n", __LINE__);
   return 0;
 }
