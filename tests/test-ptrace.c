@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2004 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -53,7 +53,7 @@ extern char **environ;
 static const int nerrors_max = 100;
 
 int nerrors;
-int verbose;
+int verbose = 1;
 int print_names = 1;
 int print_elf_filename;
 
@@ -65,8 +65,8 @@ enum
   }
 trace_mode = SYSCALL;
 
-#define panic(...)						\
-	do { fprintf (stderr, __VA_ARGS__); ++nerrors; } while (0)
+#define panic(...)                                              \
+        do { fprintf (stderr, __VA_ARGS__); ++nerrors; } while (0)
 
 static unw_addr_space_t as;
 static struct UPT_info *ui;
@@ -90,47 +90,47 @@ do_backtrace (void)
   do
     {
       if ((ret = unw_get_reg (&c, UNW_REG_IP, &ip)) < 0
-	  || (ret = unw_get_reg (&c, UNW_REG_SP, &sp)) < 0)
-	panic ("unw_get_reg/unw_get_proc_name() failed: ret=%d\n", ret);
+          || (ret = unw_get_reg (&c, UNW_REG_SP, &sp)) < 0)
+        panic ("unw_get_reg/unw_get_proc_name() failed: ret=%d\n", ret);
 
       if (n == 0)
-	start_ip = ip;
+        start_ip = ip;
 
       buf[0] = '\0';
       if (print_names)
-	unw_get_proc_name (&c, buf, sizeof (buf), &off);
+        unw_get_proc_name (&c, buf, sizeof (buf), &off);
 
       if (verbose)
-	{
-	  if (off)
-	    {
-	      len = strlen (buf);
-	      if (len >= sizeof (buf) - 32)
-		len = sizeof (buf) - 32;
-	      sprintf (buf + len, "+0x%lx", (unsigned long) off);
-	    }
-	  printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
-	}
+        {
+          if (off)
+            {
+              len = strlen (buf);
+              if (len >= sizeof (buf) - 32)
+                len = sizeof (buf) - 32;
+              sprintf (buf + len, "+0x%lx", (unsigned long) off);
+            }
+          printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
+        }
 
       if ((ret = unw_get_proc_info (&c, &pi)) < 0 && ret != -UNW_ENOINFO) /* It's possible unw_get_proc_info don't return information */
-	panic ("unw_get_proc_info(ip=0x%lx) failed: ret=%d\n", (long) ip, ret);
+        panic ("unw_get_proc_info(ip=0x%lx) failed: ret=%d\n", (long) ip, ret);
       else if (verbose)
-	printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx",
-		(long) pi.start_ip, (long) pi.end_ip,
-		(long) pi.handler, (long) pi.lsda);
+        printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx",
+                (long) pi.start_ip, (long) pi.end_ip,
+                (long) pi.handler, (long) pi.lsda);
 
 #if UNW_TARGET_IA64
       {
-	unw_word_t bsp;
+        unw_word_t bsp;
 
-	if ((ret = unw_get_reg (&c, UNW_IA64_BSP, &bsp)) < 0)
-	  panic ("unw_get_reg() failed: ret=%d\n", ret);
-	else if (verbose)
-	  printf (" bsp=%lx", bsp);
+        if ((ret = unw_get_reg (&c, UNW_IA64_BSP, &bsp)) < 0)
+          panic ("unw_get_reg() failed: ret=%d\n", ret);
+        else if (verbose)
+          printf (" bsp=%lx", bsp);
       }
 #endif
       if (verbose)
-	printf ("\n");
+        printf ("\n");
 
       if (print_elf_filename)
         {
@@ -142,24 +142,24 @@ do_backtrace (void)
 
       ret = unw_step (&c);
       if (ret < 0)
-	{
-	  unw_get_reg (&c, UNW_REG_IP, &ip);
-	  panic ("FAILURE: unw_step() returned %d for ip=%lx (start ip=%lx)\n",
-		 ret, (long) ip, (long) start_ip);
-	}
+        {
+          unw_get_reg (&c, UNW_REG_IP, &ip);
+          panic ("FAILURE: unw_step() returned %d for ip=%lx (start ip=%lx)\n",
+                 ret, (long) ip, (long) start_ip);
+        }
 
       if (++n > 64)
-	{
-	  /* guard against bad unwind info in old libraries... */
-	  panic ("too deeply nested---assuming bogus unwind (start ip=%lx)\n",
-		 (long) start_ip);
-	  break;
-	}
+        {
+          /* guard against bad unwind info in old libraries... */
+          panic ("too deeply nested---assuming bogus unwind (start ip=%lx)\n",
+                 (long) start_ip);
+          break;
+        }
       if (nerrors > nerrors_max)
         {
-	  panic ("Too many errors (%d)!\n", nerrors);
-	  break;
-	}
+          panic ("Too many errors (%d)!\n", nerrors);
+          break;
+        }
     }
   while (ret > 0);
 
@@ -203,27 +203,27 @@ main (int argc, char **argv)
   else if (argc > 1)
     while (argv[optind][0] == '-')
       {
-	if (strcmp (argv[optind], "-v") == 0)
-	  ++optind, verbose = 1;
-	else if (strcmp (argv[optind], "-i") == 0)
-	  ++optind, trace_mode = INSTRUCTION;	/* backtrace at each insn */
-	else if (strcmp (argv[optind], "-s") == 0)
-	  ++optind, trace_mode = SYSCALL;	/* backtrace at each syscall */
-	else if (strcmp (argv[optind], "-t") == 0)
-	  /* Execute until raise(SIGUSR1), then backtrace at each insn
-	     until raise(SIGUSR2).  */
-	  ++optind, trace_mode = TRIGGER;
-	else if (strcmp (argv[optind], "-c") == 0)
-	  /* Enable caching of unwind-info.  */
-	  ++optind, unw_set_caching_policy (as, UNW_CACHE_GLOBAL);
-	else if (strcmp (argv[optind], "-n") == 0)
-	  /* Don't look-up and print symbol names.  */
-	  ++optind, print_names = 0;
+        if (strcmp (argv[optind], "-v") == 0)
+          ++optind, verbose = 1;
+        else if (strcmp (argv[optind], "-i") == 0)
+          ++optind, trace_mode = INSTRUCTION;   /* backtrace at each insn */
+        else if (strcmp (argv[optind], "-s") == 0)
+          ++optind, trace_mode = SYSCALL;       /* backtrace at each syscall */
+        else if (strcmp (argv[optind], "-t") == 0)
+          /* Execute until raise(SIGUSR1), then backtrace at each insn
+             until raise(SIGUSR2).  */
+          ++optind, trace_mode = TRIGGER;
+        else if (strcmp (argv[optind], "-c") == 0)
+          /* Enable caching of unwind-info.  */
+          ++optind, unw_set_caching_policy (as, UNW_CACHE_GLOBAL);
+        else if (strcmp (argv[optind], "-n") == 0)
+          /* Don't look-up and print symbol names.  */
+          ++optind, print_names = 0;
         else if (strcmp (argv[optind], "-f") == 0)
-	  /* Print elf filenames. */
+          /* Print elf filenames. */
           ++optind, print_elf_filename = 1;
-	else
-	  fprintf(stderr, "unrecognized option: %s\n", argv[optind++]);
+        else
+          fprintf(stderr, "unrecognized option: %s\n", argv[optind++]);
         if (optind >= argc)
           break;
       }
@@ -234,7 +234,7 @@ main (int argc, char **argv)
       /* child */
 
       if (!verbose)
-	dup2 (open ("/dev/null", O_WRONLY), 1);
+        dup2 (open ("/dev/null", O_WRONLY), 1);
 
 #if HAVE_DECL_PTRACE_TRACEME
       long stat = ptrace (PTRACE_TRACEME, 0, 0, 0);
@@ -271,113 +271,113 @@ main (int argc, char **argv)
     {
       pid = wait4 (-1, &status, 0, NULL);
       if (pid == -1)
-	{
-	  if (errno == EINTR)
-	    continue;
+        {
+          if (errno == EINTR)
+            continue;
 
-	  panic ("wait4() failed (errno=%d)\n", errno);
-	}
+          panic ("wait4() failed (errno=%d)\n", errno);
+        }
       pending_sig = 0;
       if (WIFSIGNALED (status) || WIFEXITED (status)
-	  || (WIFSTOPPED (status) && WSTOPSIG (status) != SIGTRAP))
-	{
-	  if (WIFEXITED (status))
-	    {
-	      if (WEXITSTATUS (status) != 0)
-		panic ("child's exit status %d\n", WEXITSTATUS (status));
-	      if (WEXITSTATUS (status) == 77)
-		_exit(77);
-	      break;
-	    }
-	  else if (WIFSIGNALED (status))
-	    {
-	      if (!killed)
-		panic ("child terminated by signal %d\n", WTERMSIG (status));
-	      break;
-	    }
-	  else
-	    {
-	      pending_sig = WSTOPSIG (status);
-	      /* Avoid deadlock:  */
-	      if (WSTOPSIG (status) == SIGKILL)
-	        break;
-	      if (trace_mode == TRIGGER)
-		{
-		  if (WSTOPSIG (status) == SIGUSR1)
-		    state = 0;
-		  else if  (WSTOPSIG (status) == SIGUSR2)
-		    state = 1;
-		}
-	      if (WSTOPSIG (status) != SIGUSR1 && WSTOPSIG (status) != SIGUSR2)
-	        {
-		  static int count = 0;
+          || (WIFSTOPPED (status) && WSTOPSIG (status) != SIGTRAP))
+        {
+          if (WIFEXITED (status))
+            {
+              if (WEXITSTATUS (status) != 0)
+                panic ("child's exit status %d\n", WEXITSTATUS (status));
+              if (WEXITSTATUS (status) == 77)
+                _exit(77);
+              break;
+            }
+          else if (WIFSIGNALED (status))
+            {
+              if (!killed)
+                panic ("child terminated by signal %d\n", WTERMSIG (status));
+              break;
+            }
+          else
+            {
+              pending_sig = WSTOPSIG (status);
+              /* Avoid deadlock:  */
+              if (WSTOPSIG (status) == SIGKILL)
+                break;
+              if (trace_mode == TRIGGER)
+                {
+                  if (WSTOPSIG (status) == SIGUSR1)
+                    state = 0;
+                  else if  (WSTOPSIG (status) == SIGUSR2)
+                    state = 1;
+                }
+              if (WSTOPSIG (status) != SIGUSR1 && WSTOPSIG (status) != SIGUSR2)
+                {
+                  static int count = 0;
 
-		  if (count++ > 100)
-		    {
-		      panic ("Too many child unexpected signals (now %d)\n",
-			     WSTOPSIG (status));
-			killed = 1;
-		    }
-	        }
-	    }
-	}
+                  if (count++ > 100)
+                    {
+                      panic ("Too many child unexpected signals (now %d)\n",
+                             WSTOPSIG (status));
+                        killed = 1;
+                    }
+                }
+            }
+        }
 
       switch (trace_mode)
-	{
-	case TRIGGER:
-	  if (state)
+        {
+        case TRIGGER:
+          if (state)
 #if HAVE_DECL_PTRACE_CONT
-	    ptrace (PTRACE_CONT, target_pid, 0, 0);
+            ptrace (PTRACE_CONT, target_pid, 0, 0);
 #elif HAVE_DECL_PT_CONTINUE
-	    ptrace (PT_CONTINUE, target_pid, (caddr_t)1, 0);
+            ptrace (PT_CONTINUE, target_pid, (caddr_t)1, 0);
 #else
 #error Port me
 #endif
-	  else
-	    {
-	      do_backtrace ();
+          else
+            {
+              do_backtrace ();
 #if HAVE_DECL_PTRACE_SINGLESTEP
-	      if (ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig) < 0)
-          {
-            panic ("ptrace(PTRACE_SINGLESTEP) failed (errno=%d)\n", errno);
-            killed = 1;
-          }
+              if (ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig) < 0)
+                {
+                  panic ("ptrace(PTRACE_SINGLESTEP) failed (errno=%d)\n", errno);
+                  killed = 1;
+                }
 #elif HAVE_DECL_PT_STEP
-	      if (ptrace (PT_STEP, target_pid, (caddr_t)1, pending_sig) < 0)
-          {
-            panic ("ptrace(PT_STEP) failed (errno=%d)\n", errno);
-            killed = 1;
-          }
+              if (ptrace (PT_STEP, target_pid, (caddr_t)1, pending_sig) < 0)
+                {
+                  panic ("ptrace(PT_STEP) failed (errno=%d)\n", errno);
+                  killed = 1;
+                }
 #else
 #error Singlestep me
 #endif
-	    }
-	  break;
+            }
+          break;
 
-	case SYSCALL:
-	  if (!state)
-	    do_backtrace ();
-	  state ^= 1;
+        case SYSCALL:
+          if (!state)
+            do_backtrace ();
+          state ^= 1;
 #if HAVE_DECL_PT_SYSCALL
-	  ptrace (PT_SYSCALL, target_pid, (caddr_t)1, pending_sig);
+          ptrace (PT_SYSCALL, target_pid, (caddr_t)1, pending_sig);
 #elif HAVE_DECL_PTRACE_SYSCALL
-	  ptrace (PTRACE_SYSCALL, target_pid, 0, pending_sig);
+          ptrace (PTRACE_SYSCALL, target_pid, 0, pending_sig);
 #else
 #error Syscall me
 #endif
-	  break;
+          break;
 
-	case INSTRUCTION:
-	  do_backtrace ();
+        case INSTRUCTION:
+          do_backtrace ();
 #if HAVE_DECL_PTRACE_SINGLESTEP
-	      ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
+              ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
 #elif HAVE_DECL_PT_STEP
-	      ptrace (PT_STEP, target_pid, (caddr_t)1, pending_sig);
+              ptrace (PT_STEP, target_pid, (caddr_t)1, pending_sig);
 #else
 #error Singlestep me
 #endif
-	  break;
-	}
+          break;
+        }
       if (killed)
         kill (target_pid, SIGKILL);
     }
