@@ -1,12 +1,13 @@
 project(libunwind)
 
 cmake_minimum_required(VERSION 3.16.1)
+cmake_policy(SET CMP0092 NEW)
 
 set(CMAKE_C_STANDARD 11)
 
 set(PKG_MAJOR "1")
-set(PKG_MINOR "6")
-set(PKG_EXTRA "-rc2")
+set(PKG_MINOR "9")
+set(PKG_EXTRA "-pre")
 set(PACKAGE_STRING "libunwind")
 set(PACKAGE_BUGREPORT "")
 
